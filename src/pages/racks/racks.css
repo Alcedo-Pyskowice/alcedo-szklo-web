@@ -1,0 +1,9 @@
+.success-row {
+  background-color: #d4edda; /* Light green */
+}
+
+/* Dark theme */
+.dx-swatch-dark .success-row {
+  background-color: #1e4620; /* Darker green */
+  color: #c3e6cb; /* Light green text */
+}

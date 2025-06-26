@@ -1,0 +1,18 @@
+.file-item {
+  position: relative;
+  padding: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 10px;
+  display: none;
+}
+
+.file-item:hover .overlay {
+  display: block;
+}
+

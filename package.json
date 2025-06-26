@@ -1,0 +1,53 @@
+{
+  "name": "devextreme-template-test",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@tanstack/react-query": "^5.75.5",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "axios": "^1.9.0",
+    "devextreme": "24.2.7",
+    "devextreme-react": "24.2.7",
+    "react": "^19.1.0",
+    "react-app-polyfill": "^3.0.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.5.3",
+    "react-scripts": "5.0.1",
+    "sass": "^1.87.0",
+    "three": "^0.177.0",
+    "web-vitals": "^4.2.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "build-themes": "devextreme build",
+    "postinstall": "npm run build-themes"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "devextreme-cli": "1.10.1",
+    "devextreme-themebuilder": "24.2.7"
+  }
+}

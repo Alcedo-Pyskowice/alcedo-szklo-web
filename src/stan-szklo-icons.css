@@ -1,0 +1,24 @@
+/* icon-font.css */
+@font-face {
+  font-family: 'icomoon';
+  src: url('./icons/icomoon.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.stan-szklo {
+  font-family: 'icomoon' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.racksIcon:before {
+  content: "\e900"; /* Replace with your icon's Unicode */
+}
+
