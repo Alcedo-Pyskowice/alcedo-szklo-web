@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { TextureLoader } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
 // --- IGU Dimensions (Constants) ---
-const glassWidth = 0.8; // meters
-const glassHeight = 1.2; // meters
+//const glassWidth = 1; // meters
+//const glassHeight = 1; // meters
 const glassPaneThickness = 0.004; // 4mm glass
 const spacerAirGap = 0.016; // 16mm air gap
 const spacerBarCrossSectionWidth = 0.008;
@@ -14,7 +15,7 @@ const sealantOverlapOnGlassFace = 0.012;
 const sealantBeadThickness = 0.006;
 const epsilon = 0.0001;
 
-const GlassRender = () => {
+const GlassRender = ({ scale, symbol }) => {
   const mountRef = useRef(null);
   const rendererRef = useRef(null);
   const sceneRef = useRef(null);
@@ -24,6 +25,10 @@ const GlassRender = () => {
   const iguGroupRef = useRef(null);
 
   useEffect(() => {
+
+    const glassWidth = scale.x * 0.001
+    const glassHeight = scale.y * 0.001
+
     // --- Capture the current mount point ---
     const currentMount = mountRef.current;
     if (!currentMount) return; // Should not happen if ref is correctly assigned
@@ -45,7 +50,7 @@ const GlassRender = () => {
 
     // --- Camera Setup ---
     const camera = new THREE.PerspectiveCamera(50, currentMount.clientWidth / currentMount.clientHeight, 0.1, 100);
-    camera.position.set(glassWidth * 0.7, glassHeight * 0.3 , glassWidth * 2); // Adjusted for better initial view
+    camera.position.set(glassWidth * 0.7, glassHeight * 0.3, glassWidth * 2); // Adjusted for better initial view
     cameraRef.current = camera;
 
     // --- Controls ---
@@ -69,21 +74,37 @@ const GlassRender = () => {
     // --- HDRI Environment ---
     new RGBELoader()
       .setPath(process.env.PUBLIC_URL + '/') // Assuming HDRI is in public folder
-      .load('bloem_field_sunrise_4k.hdr', function (texture) {
+      .load('bloem_field_sunrise_4k.hdr', function(texture) {
         texture.mapping = THREE.EquirectangularReflectionMapping;
         scene.background = texture;
         scene.environment = texture;
         console.log("HDRI loaded.");
       },
         undefined,
-        function (err) {
+        function(err) {
           console.error('Error loading HDRI:', err);
           scene.background = new THREE.Color(0xbbbbcc);
           console.log("Using fallback background color.");
         });
 
     // --- Materials ---
+    //
+    const textureLoader = new TextureLoader();
+
+    const colorMap = textureLoader.load(process.env.PUBLIC_URL + '/glassMaterialTextures/DirtWindowStains005_COL_1K.jpg')
+    const normalMap = textureLoader.load(process.env.PUBLIC_URL + '/glassMaterialTextures/DirtWindowStains005_NRM_1K.jpg')
+    const glossMap = textureLoader.load(process.env.PUBLIC_URL + '/glassMaterialTextures/DirtWindowStains005_GLOSS_1K.jpg')
+    const refMap = textureLoader.load(process.env.PUBLIC_URL + '/glassMaterialTextures/DirtWindowStains005_REFL_1K.jpg')
+    const alphaMap = textureLoader.load(process.env.PUBLIC_URL + '/glassMaterialTextures/DirtWindowStains005_ALPHAMASKED_1K.png')
+    const envMap = textureLoader.load(process.env.PUBLIC_URL + '/glassMaterialTextures/DirtWindowStains005_Sphere.png')
+
     const glassMaterial = new THREE.MeshPhysicalMaterial({
+      map: colorMap,
+      normalMap: normalMap,
+      roughnessMap: glossMap,
+      metalnessMap: refMap,
+      alphaMap: alphaMap,
+      envMap: envMap,
       color: 0xffffff,
       metalness: 0.15,
       roughness: 0.01,
@@ -114,6 +135,22 @@ const GlassRender = () => {
     // --- Geometries and Meshes ---
     const iguGroup = new THREE.Group();
     iguGroupRef.current = iguGroup;
+
+    /*  @TODO
+     * +1h 06.07
+     * +2h 07.07
+     * +2h 08.07
+     * zrobic dynamiczne generowanie szyb z symbolu
+     *      if (symbolSplit.length % 2 !== 0 && symbolSplit.length > 1 && symbolSplit.length < 10) {
+              if (v.value.match(/^(\d{1,2})(?:\/(\d{1,2})\/\1)*(?:\/\2\/\1)?$/)) {
+                //dodac do sceny nowe szyby zeby sie zgadzalo
+                //
+                // ilosc szyb
+                const symbolLength = Math.round(symbolSplit.length / 2)
+                if (symbolLength >= 2) {
+
+     */
+
 
     const glassGeometry = new THREE.BoxGeometry(glassWidth, glassHeight, glassPaneThickness);
     const glassPane1 = new THREE.Mesh(glassGeometry, glassMaterial);
@@ -176,6 +213,19 @@ const GlassRender = () => {
     // you can omit setting iguGroup.position.y or set it to 0, and ensure OrbitControls targets 0,0,0.
     // For this example, let's keep it centered around the origin for simpler camera control.
     // The camera target has already been set to (0,0,0).
+
+    const symbolSplit = symbol.split('/');
+
+    if (symbolSplit.length % 2 !== 0 && symbolSplit.length > 1 && symbolSplit.length < 10) {
+      if (symbol.value.match(/^(\d{1,2})(?:\/(\d{1,2})\/\1)*(?:\/\2\/\1)?$/)) {
+        const symbolLength = Math.round(symbolSplit.length / 2)
+        if (symbolLength >= 2) {
+          // tutaj wrzucic generowanie szyb, spacerow i czarnego
+          // dodatkowo musze zapytac czy szyba moze byc nieregularna: np. 4/16/6/20/4
+
+        }
+      }
+    }
     scene.add(iguGroup);
 
     // --- Handle Window Resize ---
@@ -223,12 +273,12 @@ const GlassRender = () => {
 
       // Dispose HDRI texture if loaded
       if (sceneRef.current && sceneRef.current.environment) {
-          if(sceneRef.current.environment.dispose) sceneRef.current.environment.dispose();
-          // If background is the same texture, it's already handled by environment.dispose()
-          // otherwise, dispose it separately:
-          // if(sceneRef.current.background && sceneRef.current.background !== sceneRef.current.environment && sceneRef.current.background.dispose) {
-          //     sceneRef.current.background.dispose();
-          // }
+        if (sceneRef.current.environment.dispose) sceneRef.current.environment.dispose();
+        // If background is the same texture, it's already handled by environment.dispose()
+        // otherwise, dispose it separately:
+        // if(sceneRef.current.background && sceneRef.current.background !== sceneRef.current.environment && sceneRef.current.background.dispose) {
+        //     sceneRef.current.background.dispose();
+        // }
       }
       // Fallback background color doesn't need disposal.
 
@@ -248,7 +298,7 @@ const GlassRender = () => {
       if (rendererRef.current) {
         rendererRef.current.dispose(); // Dispose renderer resources
         if (rendererRef.current.domElement && currentMount.contains(rendererRef.current.domElement)) {
-            currentMount.removeChild(rendererRef.current.domElement); // Remove canvas from DOM
+          currentMount.removeChild(rendererRef.current.domElement); // Remove canvas from DOM
         }
       }
 
@@ -261,7 +311,7 @@ const GlassRender = () => {
 
       console.log("ThreeScene cleaned up");
     };
-  }, []); // Empty dependency array ensures this effect runs only on mount and unmount
+  }, [scale, symbol]); // Empty dependency array ensures this effect runs only on mount and unmount
 
   return <div ref={mountRef} style={{ width: '100%', height: '100vh', overflow: 'hidden' }} />;
 };

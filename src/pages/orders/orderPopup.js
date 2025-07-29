@@ -1,7 +1,7 @@
 import { DataGrid, Form, TabPanel } from "devextreme-react";
 import { Column, Editing, Popup, Form as DGForm } from "devextreme-react/data-grid";
 import validationEngine from 'devextreme/ui/validation_engine';
-import { ButtonItem, Item, RequiredRule } from "devextreme-react/form";
+import { Item, RequiredRule } from "devextreme-react/form";
 import { Item as TabPanelItem } from "devextreme-react/tab-panel";
 import { useCallback, useEffect, useRef, useState } from "react";
 import axiosInstance from "../../axios/instance";
@@ -9,11 +9,14 @@ import OrderPopupPopup from "./orderPopupPopup";
 import { dc_typeValues, deliveryValues } from "./orders";
 import "./orders.css"
 import OrderPopupAttachments from "./orderPopupAttachments";
+import OrderPopupParams from "./orderPopupParams";
 
 export default function OrderPopup({ data, formData, setFormData, handleFieldDataChanged, saveNewOrder }) {
   const [popupDataGridData, setPopupDataGridData] = useState([])
   const [popupFormData, setPopupFormData] = useState([])
   const [titleData, setTitleData] = useState()
+  const [dtime, setDtime] = useState(null)
+  const [tabsDisabled, setTabsDisabled] = useState(true)
 
   const getLabel = (val) => {
     const found = dc_typeValues.find((item) => item.value === val);
@@ -22,11 +25,12 @@ export default function OrderPopup({ data, formData, setFormData, handleFieldDat
 
   useEffect(() => {
     if (!formData) {
-      setFormData({ DC_TYPE: "S", DC_DELIVERY: 100 })
+      setFormData({ DC_TYPE: "S", DC_DELIVERY: 100, DC_ID: 0})
     }
     if (data) {
       setTitleData({ DC_ID: data.DC_ID, DC_STATE: data.DC_STATE_TEXT, DC_RTIME: data.DC_RTIME })
       fetchPositions(data.DC_ID)
+      setTabsDisabled(false)
     }
   }, [])
 
@@ -84,7 +88,8 @@ export default function OrderPopup({ data, formData, setFormData, handleFieldDat
 
   const removePosition = async (ID) => {
     try {
-      await axiosInstance.put(`/order/position/delete/${ID}`)
+      const response = await axiosInstance.post(`/order/position/delete/${ID}`)
+      return response
     } catch (error) {
 
     }
@@ -108,8 +113,6 @@ export default function OrderPopup({ data, formData, setFormData, handleFieldDat
       }
     });
   };
-
-  const [status, setStatus] = useState();
 
   const colorMap = {
     Otwarte: '#007BFF',       // blue
@@ -142,8 +145,8 @@ export default function OrderPopup({ data, formData, setFormData, handleFieldDat
           <h2 style={{ display: 'inline' }}>Zamówienie nr {titleData.DC_ID}</h2>
           <h2 className="state-span" style={{ display: 'inline', '--dot-color': dotColor }}>Status: {titleData.DC_STATE}</h2>
           <div style={{}}>
-            <span style={{margin: 0, fontSize: '1em', fontWeight: 'bold'}}>Data rejestracji</span>
-            <h3 style={{margin: 0}}>{makeDate(titleData.DC_RTIME)}</h3>
+            <span style={{ margin: 0, fontSize: '1em', fontWeight: 'bold' }}>Data rejestracji</span>
+            <h3 style={{ margin: 0 }}>{makeDate(titleData.DC_RTIME)}</h3>
           </div>
         </span>
         : null}
@@ -171,11 +174,13 @@ export default function OrderPopup({ data, formData, setFormData, handleFieldDat
           label={{ text: "Numer zamówienia kontrachenta" }}
         />
         <Item
-          dataField="DC_DDATE"
+          dataField="DC_DTIME"
           editorType="dxDateBox"
           editorOptions={{
-            displayFormat: "dd/MM/yyyy",
-            min: new Date()
+            displayFormat: "dd/MM/yyyy, HH:mm",
+            min: new Date(),
+            type: "datetime",
+            showAnalogClock: false
           }}
           label={{ text: "Termin dostawy" }}
         />
@@ -218,7 +223,8 @@ export default function OrderPopup({ data, formData, setFormData, handleFieldDat
         />
       </Form>
       <TabPanel>
-        <TabPanelItem title="Pozycje">
+        <TabPanelItem title="Pozycje"
+        >
           <DataGrid
             ref={dataGridRef}
             dataSource={popupDataGridData}
@@ -234,6 +240,7 @@ export default function OrderPopup({ data, formData, setFormData, handleFieldDat
               }
               const editType = e.changes || []
               const hasRemove = editType.some(c => c.type === "remove")
+              console.log(e)
               if (!hasRemove) {
                 if (!data) {
                   // w response jest DC_ID pod ktorym zapisany zostal nowy order
@@ -241,9 +248,14 @@ export default function OrderPopup({ data, formData, setFormData, handleFieldDat
                     const newOrderResponse = await saveNewOrder()
                     const saveres = await savePosition(newOrderResponse.DC_NO);
                     console.log(saveres)
+                    //to tez do poprawy chyba
                     const fetch = await fetchPositions(newOrderResponse.DC_ID)
                     console.log(fetch)
                     setTitleData({ DC_ID: newOrderResponse.DC_ID, DC_STATE: newOrderResponse.DC_STATE_TEXT, DC_RTIME: newOrderResponse.DC_RTIME })
+                    setTabsDisabled(false)
+                    console.log(newOrderResponse)
+                    setFormData({...formData, DC_ID: newOrderResponse.DC_ID})
+                    console.log(formData)
                   } catch (error) {
 
                   }
@@ -259,6 +271,15 @@ export default function OrderPopup({ data, formData, setFormData, handleFieldDat
               console.log("formData: ", popupFormData)
               setPopupFormData([])
             }}
+            onRowRemoving={async (e) => {
+              const response = await removePosition(e.data.TP_ID)
+              console.log(response)
+              if (response.status !== 200) {
+                e.cancel = true;
+                return
+              }
+            }}
+
             onowPrepared={(e) => {
               if (e.rowType === 'data') {
                 switch (e.data.DC_STATE) {
@@ -385,11 +406,17 @@ export default function OrderPopup({ data, formData, setFormData, handleFieldDat
           </DataGrid>
         </TabPanelItem>
 
-        <TabPanelItem title="Parametry">
+        <TabPanelItem title="Parametry"
+          disabled={tabsDisabled}
+        >
+          <OrderPopupParams DC_ID={formData.DC_ID} />
+
         </TabPanelItem>
 
-        <TabPanelItem title="Załączniki">
-          <OrderPopupAttachments data={data} saveNewOrder={saveNewOrder} />
+        <TabPanelItem title="Załączniki"
+          disabled={tabsDisabled}
+        >
+          <OrderPopupAttachments DC_ID={formData.DC_ID} />
         </TabPanelItem>
       </TabPanel>
     </div >

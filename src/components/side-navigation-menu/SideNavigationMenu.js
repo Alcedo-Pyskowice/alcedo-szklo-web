@@ -58,6 +58,10 @@ export default function SideNavigationMenu(props) {
       treeView.expandItem(currentPath);
     }
 
+    if (currentPath === "/profile") {
+      treeView.unselectAll();
+    }
+
     if (compactMode) {
       treeView.collapseAll();
     }

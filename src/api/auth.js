@@ -67,10 +67,10 @@ export async function createAccount(email, password) {
   }
 }
 
-export async function changePassword(recoveryCode, newPassword) {
+export async function changePassword(newPassword, token) {
   try {
     // Send request
-    await axiosInstance.post(("users/remind-password/new-password"), { remindPasswordToken: recoveryCode, newPassword: newPassword })
+    await axiosInstance.post((`/users/password/change?token=${token}&password=${newPassword}`))
     return {
       isOk: true
     };
@@ -86,7 +86,7 @@ export async function changePassword(recoveryCode, newPassword) {
 export async function resetPassword(email) {
   try {
     // Send request
-    await axiosInstance.post(("users/password-reset"), { email: email })
+    await axiosInstance.post((`/users/passwordReset?mail=${email}`))
     return {
       isOk: true
     };

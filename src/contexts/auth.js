@@ -30,9 +30,9 @@ function AuthProvider(props) {
 
   const signOut = useCallback(() => {
     setUser(undefined);
-    localStorage.clear("token")
-    localStorage.clear("user_id")
-    localStorage.clear("name")
+    localStorage.removeItem("token")
+    localStorage.removeItem("user_id")
+    localStorage.removeItem("name")
   }, []);
 
 

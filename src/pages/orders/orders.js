@@ -1,4 +1,5 @@
 import { ButtonGroup, DataGrid, Toast } from "devextreme-react";
+import { ToolbarItem } from "devextreme-react/popup";
 import { Column, ColumnChooser, Editing, FilterBuilderPopup, FilterPanel, FilterRow, Form, HeaderFilter, MasterDetail, Pager, Paging, Popup, Position, Toolbar, Item, StateStoring, Lookup } from "devextreme-react/data-grid";
 import validationEngine from 'devextreme/ui/validation_engine';
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -173,6 +174,16 @@ export default function Orders() {
     updateDataGrid()
   }, [])
 
+  const makeDTIME = (dateString) => {
+    const date = new Date(dateString)
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hour = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hour}:${min}`;
+  }
+
   const saveOrder = async () => {
     const result = validationEngine.validateGroup("myGroup");
     if (!result.isValid) {
@@ -186,7 +197,7 @@ export default function Orders() {
         "DC_C_NUMBER": popupFormData.DC_C_NUMBER,
         "DC_COMMENTS": popupFormData.DC_COMMENTS,
         "DC_ADDRESS": popupFormData.DC_ADDRESS,
-        "DC_DTIME": popupFormData.DC_DTIME,
+        "DC_DTIME": new Date(popupFormData.DC_DTIME),
         "DC_CONTACT": popupFormData.DC_CONTACT,
         "DC_DELIVERY": popupFormData.DC_DELIVERY,
         "DC_TYPE": popupFormData.DC_TYPE
@@ -208,6 +219,26 @@ export default function Orders() {
       console.log(error)
     }
   }
+
+  const handleSave = async () => {
+    const result = validationEngine.validateGroup("myGroup");
+    if (!result.isValid) {
+      return
+    }
+    await saveOrder();
+    updateDataGrid();
+    setIsPopupVisible(false)
+  };
+
+  const handleCancel = (e) => {
+    setIsPopupVisible(false)
+  };
+
+  const handleApprove = () => {
+    // Custom approve logic
+    console.log('Approved!');
+    // You might close the popup after this action
+  };
 
   return (
     <div className="dx-card ordersContainer" style={{ padding: "15px" }}>
@@ -322,7 +353,85 @@ export default function Orders() {
             showCloseButton={true}
             width={'100%'}
             height={'100%'}
-          />
+          >
+            <toolbarItems>
+              {/* 
+              * custom buttony na dole calego popupu
+              * trzeba zrobic: 
+              * save - to samo co w onSave chyba
+              * cancel chowa calosc
+              * pobierz (do jsona)
+              * pobierz do pdf
+              * drukuj?
+              * zamow?
+              */}
+              <ToolbarItem
+                widget="dxButton"
+                toolbar="bottom"
+                location="before"
+                options={{
+                  text: 'Pobierz',
+                  type: 'default',
+                  stylingMode: 'outlined',
+                  //onClick: handleSave,
+                }}
+              />
+              <ToolbarItem
+                widget="dxButton"
+                toolbar="bottom"
+                location="before"
+                options={{
+                  text: 'Pobierz do PDF',
+                  type: 'default',
+                  stylingMode: 'outlined',
+                  //onClick: handleSave,
+                }}
+              />
+              <ToolbarItem
+                widget="dxButton"
+                toolbar="bottom"
+                location="before"
+                options={{
+                  text: 'Drukuj',
+                  type: 'default',
+                  stylingMode: 'outlined',
+                  //onClick: handleSave,
+                }}
+              />
+              <ToolbarItem
+                widget="dxButton"
+                toolbar="bottom"
+                location="before"
+                options={{
+                  text: 'Zamów',
+                  type: 'default',
+                  stylingMode: 'outlined',
+                  //onClick: handleSave,
+                }}
+              />
+              <ToolbarItem
+                widget="dxButton"
+                toolbar="bottom"
+                location="after"
+                options={{
+                  text: 'Zapisz',
+                  type: 'default',
+                  stylingMode: 'contained',
+                  onClick: handleSave,
+                }}
+              />
+              <ToolbarItem
+                widget="dxButton"
+                toolbar="bottom"
+                location="after"
+                options={{
+                  text: 'Anuluj',
+                  stylingMode: 'outlined',
+                  onClick: handleCancel,
+                }}
+              />
+            </toolbarItems>
+          </Popup>
           <Form
             width={'100%'}
             colCount={1}
@@ -371,11 +480,11 @@ export default function Orders() {
           defaultVisible={false}
         />
         <Column
-          dataField="DC_DATE"
+          dataField="DC_RTIME"
           caption="Data"
         />
         <Column
-          dataField="DC_DDATE"
+          dataField="DC_DTIME"
           caption="Termin"
         />
         <Column
@@ -383,15 +492,15 @@ export default function Orders() {
           caption="Stan"
         />
         <Column
-          dataField="DC_ZAM_KLIENTA"
+          dataField="DC_C_NUMBER"
           caption="Nr Zamówienia Kontrahenta"
         />
         <Column
-          dataField="DC_ILOSC"
+          dataField="DC_QNT"
           caption="Ilość"
         />
         <Column
-          dataField="DC_ROZLICZONE"
+          dataField="DC_R_QNT"
           caption="Rozliczone"
         />
         <Column

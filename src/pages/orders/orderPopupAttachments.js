@@ -9,14 +9,13 @@ import "./orderPopupAttachments.css"
 import { DataGrid, FileUploader } from "devextreme-react";
 import { Editing } from "devextreme-react/data-grid";
 
-export default function OrderPopupAttachments({ data, saveNewOrder }) {
+export default function OrderPopupAttachments({ DC_ID }) {
 
   const [files, setFiles] = useState([])
 
   const fetchAttachments = async () => {
     try {
-      if (data) {
-        const DC_ID = data.DC_ID
+      if (DC_ID) {
         const response = await axiosInstance.get(`/order/files/${DC_ID}`);
         console.log(response)
         setFiles(response.data.data)
@@ -34,14 +33,6 @@ export default function OrderPopupAttachments({ data, saveNewOrder }) {
   const uploadFile = useCallback(async (file, progressCallback) => {
     const formData = new FormData();
     formData.append('file', file);
-    let DC_ID = 0;
-    if (!data) {
-      const newOrderResponse = await saveNewOrder()
-      DC_ID = newOrderResponse.data.data[0].DC_ID;
-    } else {
-      DC_ID = data.DC_ID
-    }
-
     return await axiosInstance
       .post(`/order/files/upload/${DC_ID}`, formData, {
         headers: {

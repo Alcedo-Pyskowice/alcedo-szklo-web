@@ -29,6 +29,7 @@ export default function ChangePasswordForm() {
 
     if (result.isOk) {
       navigate('/login');
+      notify("Twoje hasło zostało pomyślnie zmienione", 'success', 2500);
     } else {
       notify(result.message, 'error', 2000);
     }

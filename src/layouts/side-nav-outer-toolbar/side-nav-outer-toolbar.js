@@ -17,7 +17,9 @@ export default function SideNavOuterToolbar({ title, children }) {
   const { isXSmall, isLarge } = useScreenSize();
   const [patchCssClass, onMenuReady] = useMenuPatch();
   const [menuStatus, setMenuStatus] = useState(
-    isLarge ? MenuStatus.Opened : MenuStatus.Closed
+    //zmienione zeby przy otwarciu aplikacji menu bylo zamkniete
+    //patrz: side-nav-inner-toolbar.js dla default wartosci
+    MenuStatus.Closed
   );
 
   const toggleMenu = useCallback(({ event }) => {
