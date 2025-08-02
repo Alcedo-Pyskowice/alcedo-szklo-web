@@ -1,6 +1,6 @@
-import { Form } from "devextreme-react";
+import Form from "devextreme-react/form";
 import { GroupItem, Item } from "devextreme-react/form";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axiosInstance from "../../axios/instance";
 
 export default function OrderPopupParams({ DC_ID }) {
@@ -30,7 +30,7 @@ export default function OrderPopupParams({ DC_ID }) {
   }
 
   const makeValues = (data) => {
-    const a =  data.reduce((acc, item) => {
+    const a = data.reduce((acc, item) => {
       acc[item.PA_SYMBOL] = item.DCP_VALUE
       return acc
     }, {})

@@ -48,6 +48,8 @@
   },
   "devDependencies": {
     "devextreme-cli": "1.10.1",
-    "devextreme-themebuilder": "24.2.7"
+    "devextreme-themebuilder": "24.2.7",
+    "source-map-explorer": "^2.5.3",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }

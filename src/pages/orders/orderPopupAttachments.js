@@ -6,7 +6,8 @@ import '../../themes/generated/theme.base.css';
 import '../../themes/generated/theme.additional.dark.css';
 import '../../themes/generated/theme.additional.css';
 import "./orderPopupAttachments.css"
-import { DataGrid, FileUploader } from "devextreme-react";
+import DataGrid from "devextreme-react/data-grid";
+import FileUploader from "devextreme-react/file-uploader";
 import { Editing } from "devextreme-react/data-grid";
 
 export default function OrderPopupAttachments({ DC_ID }) {

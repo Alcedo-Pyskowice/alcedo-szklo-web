@@ -1,4 +1,4 @@
-import { Button, List, ResponsiveBox } from "devextreme-react";
+import ResponsiveBox from "devextreme-react/responsive-box";
 import './optimization.css'
 import { useState } from "react";
 import { Item, Location } from "devextreme-react/responsive-box";

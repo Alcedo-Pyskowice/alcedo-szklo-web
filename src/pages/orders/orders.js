@@ -1,4 +1,6 @@
-import { ButtonGroup, DataGrid, Toast } from "devextreme-react";
+import DataGrid from "devextreme-react/data-grid"
+import ButtonGroup from "devextreme-react/button-group";
+import Toast from "devextreme-react/toast";
 import { ToolbarItem } from "devextreme-react/popup";
 import { Column, ColumnChooser, Editing, FilterBuilderPopup, FilterPanel, FilterRow, Form, HeaderFilter, MasterDetail, Pager, Paging, Popup, Position, Toolbar, Item, StateStoring, Lookup } from "devextreme-react/data-grid";
 import validationEngine from 'devextreme/ui/validation_engine';

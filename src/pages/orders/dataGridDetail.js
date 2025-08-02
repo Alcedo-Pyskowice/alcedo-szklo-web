@@ -1,6 +1,6 @@
-import { DataGrid } from "devextreme-react";
+import DataGrid from "devextreme-react/data-grid";
 import { Column } from "devextreme-react/data-grid";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from "../../axios/instance";
 import "./orders.css"
 const DataGridDetail = (props) => {
@@ -22,13 +22,13 @@ const DataGridDetail = (props) => {
   }
 
   return (
-    <React.Fragment>
+    <>
       <DataGrid
         dataSource={positionsDataGridData}
         showBorders={true}
         columnAutoWidth={true}
         onRowPrepared={(e) => {
-          if(e.rowType === 'data'){
+          if (e.rowType === 'data') {
             switch (e.data.TP_STATE) {
               case 'P':
                 e.rowElement.classList.add('production-row')
@@ -123,7 +123,7 @@ const DataGridDetail = (props) => {
         />
 
       </DataGrid>
-    </React.Fragment>
+    </>
   );
 };
 export default DataGridDetail;

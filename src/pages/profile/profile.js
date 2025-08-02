@@ -1,6 +1,6 @@
-import { Form } from "devextreme-react";
+import Form from "devextreme-react/form";
 import { GroupItem, Item } from "devextreme-react/form";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axiosInstance from "../../axios/instance";
 
 export default function Profile() {

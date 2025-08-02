@@ -1,4 +1,9 @@
-import { Button, Chart, DataGrid, DateRangeBox, NumberBox, TabPanel, Toast } from "devextreme-react";
+import Button from "devextreme-react/button"
+import Chart from "devextreme-react/chart"
+import DataGrid from "devextreme-react/data-grid"
+import DateRangeBox from "devextreme-react/date-range-box"
+import TabPanel from "devextreme-react/tab-panel"
+import Toast from "devextreme-react/toast"
 import { Item } from "devextreme-react/tab-panel"
 import { useContext, useRef, useState, useEffect } from "react";
 import {
@@ -9,7 +14,6 @@ import {
   HeaderFilter,
   Pager,
   Paging,
-  Scrolling,
   StateStoring
 } from "devextreme-react/data-grid";
 import { CommonSeriesSettings, SeriesTemplate, Tooltip } from "devextreme-react/chart";

@@ -1,7 +1,8 @@
-import { Form, TabPanel } from "devextreme-react";
+import Form from "devextreme-react/form";
+import TabPanel from "devextreme-react/tab-panel";
 import { GroupItem, Item } from "devextreme-react/form";
 import { Item as TabPanelItem } from "devextreme-react/tab-panel";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import GlassRender from "./glassRender";
 
 const opcjeList = [
