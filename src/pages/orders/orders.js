@@ -47,69 +47,23 @@ export const dc_typeValues = [
 
 export default function Orders() {
 
-
-
   //ozapgwdx
   const stateValues = [
-    {
-      text: 'O',
-      state: 'O',
-      hint: ''
-    },
-    {
-      text: 'Z',
-      state: 'Z',
-      hint: ''
-    },
-    {
-      text: 'A',
-      state: 'A',
-      hint: ''
-    },
-    {
-      text: 'P',
-      state: 'P',
-      hint: ''
-    },
-    {
-      text: 'G',
-      state: 'G',
-      hint: ''
-    },
-    {
-      text: 'W',
-      state: 'W',
-      hint: ''
-    },
-    {
-      text: 'D',
-      state: 'D',
-      hint: ''
-    },
-    {
-      text: 'X',
-      state: 'X',
-      hint: ''
-    }
+    { text: 'O', state: 'O', hint: '' },
+    { text: 'Z', state: 'Z', hint: '' },
+    { text: 'A', state: 'A', hint: '' },
+    { text: 'P', state: 'P', hint: '' },
+    { text: 'G', state: 'G', hint: '' },
+    { text: 'W', state: 'W', hint: '' },
+    { text: 'D', state: 'D', hint: '' },
+    { text: 'X', state: 'X', hint: '' }
   ]
 
   //svr
   const typeValues = [
-    {
-      text: 'S',
-      type: 'S',
-      hint: ''
-    },
-    {
-      text: 'V',
-      type: 'V',
-      hint: ''
-    },
-    {
-      text: 'R',
-      type: 'R',
-      hint: ''
-    },
+    { text: 'S', type: 'S', hint: '' },
+    { text: 'V', type: 'V', hint: '' },
+    { text: 'R', type: 'R', hint: '' },
   ]
 
   const [toastConfig, setToastConfig] = useState({
@@ -129,7 +83,6 @@ export default function Orders() {
   const typeButtonGroupRef = useRef(null)
 
   const [ordersDataGridData, setOrdersDataGridData] = useState([])
-  const [popupData, setPopupData] = useState()
 
   const handleFieldDataChanged = useCallback((e) => {
     setPopupFormData((prevData) => ({
@@ -143,6 +96,8 @@ export default function Orders() {
   const [editingData, setEditingData] = useState(null)
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const [isAddingRow, setIsAddingRow] = useState(false)
+  const [stateButtonSelected, setStateButtonSelected] = useState()
+  const [typeButtonSelected, setTypeButtonSelected] = useState()
 
   const updateDataGrid = async () => {
     let params = { page: 1, limit: 100 }
