@@ -5,13 +5,13 @@ import { Column, Editing, Popup, Form as DGForm } from "devextreme-react/data-gr
 import validationEngine from 'devextreme/ui/validation_engine';
 import { Item, RequiredRule } from "devextreme-react/form";
 import { Item as TabPanelItem } from "devextreme-react/tab-panel";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import axiosInstance from "../../axios/instance";
 import OrderPopupPopup from "./orderPopupPopup";
 import { dc_typeValues, deliveryValues } from "./orders";
 import "./orders.css"
-import OrderPopupAttachments from "./orderPopupAttachments";
-import OrderPopupParams from "./orderPopupParams";
+const OrderPopupAttachments = React.lazy(() => import("./orderPopupAttachments"))
+const OrderPopupParams = React.lazy(() => import("./orderPopupParams"))
 
 export default function OrderPopup({ data, formData, setFormData, handleFieldDataChanged, saveNewOrder }) {
   const [popupDataGridData, setPopupDataGridData] = useState([])
@@ -27,7 +27,7 @@ export default function OrderPopup({ data, formData, setFormData, handleFieldDat
 
   useEffect(() => {
     if (!formData) {
-      setFormData({ DC_TYPE: "S", DC_DELIVERY: 100, DC_ID: 0})
+      setFormData({ DC_TYPE: "S", DC_DELIVERY: 100, DC_ID: 0 })
     }
     if (data) {
       setTitleData({ DC_ID: data.DC_ID, DC_STATE: data.DC_STATE_TEXT, DC_RTIME: data.DC_RTIME })
@@ -256,7 +256,7 @@ export default function OrderPopup({ data, formData, setFormData, handleFieldDat
                     setTitleData({ DC_ID: newOrderResponse.DC_ID, DC_STATE: newOrderResponse.DC_STATE_TEXT, DC_RTIME: newOrderResponse.DC_RTIME })
                     setTabsDisabled(false)
                     console.log(newOrderResponse)
-                    setFormData({...formData, DC_ID: newOrderResponse.DC_ID})
+                    setFormData({ ...formData, DC_ID: newOrderResponse.DC_ID })
                     console.log(formData)
                   } catch (error) {
 
@@ -411,14 +411,17 @@ export default function OrderPopup({ data, formData, setFormData, handleFieldDat
         <TabPanelItem title="Parametry"
           disabled={tabsDisabled}
         >
-          <OrderPopupParams DC_ID={formData.DC_ID} />
+          {formData ? (
+            <OrderPopupParams DC_ID={formData.DC_ID} />) : null}
 
         </TabPanelItem>
 
         <TabPanelItem title="Załączniki"
           disabled={tabsDisabled}
         >
-          <OrderPopupAttachments DC_ID={formData.DC_ID} />
+          {formData ? (
+            <OrderPopupAttachments DC_ID={formData.DC_ID} />) : null}
+
         </TabPanelItem>
       </TabPanel>
     </div >

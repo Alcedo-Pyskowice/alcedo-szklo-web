@@ -21,7 +21,7 @@ export default function Content() {
         />
       </Routes>
       <Footer>
-        Copyright © 2011-{new Date().getFullYear()} {appInfo.title} Inc.
+        Copyright © 1990-{new Date().getFullYear()} Alcedo ®
         <br />
         All trademarks or registered trademarks are property of their
         respective owners.

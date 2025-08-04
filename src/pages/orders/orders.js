@@ -9,6 +9,7 @@ import axiosInstance from "../../axios/instance";
 import DataGridDetail from "./dataGridDetail";
 import OrderPopup from "./orderPopup";
 import "./orders.css"
+import "./orders.scss"
 
 export const deliveryValues = [
   {
