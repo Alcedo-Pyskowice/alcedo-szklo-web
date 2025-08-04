@@ -1,4 +1,5 @@
 import Form from "devextreme-react/form";
+import 'devextreme-react/tag-box';
 import TabPanel from "devextreme-react/tab-panel";
 import { GroupItem, Item } from "devextreme-react/form";
 import { Item as TabPanelItem } from "devextreme-react/tab-panel";
@@ -145,7 +146,7 @@ export default function OrderPopupPopup({ formData, handleFieldDataChanged }) {
           </Form>
         </TabPanelItem>
         <TabPanelItem title="Podgląd">
-          <GlassRender scale={glassScale} symbol={symbol}/>
+          <GlassRender scale={glassScale} symbol={symbol} />
         </TabPanelItem>
       </TabPanel>
     </div>

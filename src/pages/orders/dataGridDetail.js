@@ -1,32 +1,24 @@
+import { useQuery } from "@tanstack/react-query";
 import DataGrid from "devextreme-react/data-grid";
 import { Column } from "devextreme-react/data-grid";
-import { useEffect, useState } from "react";
 import axiosInstance from "../../axios/instance";
 import "./orders.css"
 const DataGridDetail = (props) => {
 
-  const [positionsDataGridData, setPositionsDataGridData] = useState([])
-
-  useEffect(() => {
-    fetchPositions(props.data.data.DC_ID)
-  }, [])
-
-  const fetchPositions = async (DC_ID) => {
-    try {
-      const response = await axiosInstance.get(`/orders/positions/${DC_ID}/1/1000000`)
-      console.log(response.data.data)
-      setPositionsDataGridData(response.data.data)
-    } catch (error) {
-      console.log(error)
+  const { data: queryPosition } = useQuery({
+    queryKey: ['orderPosition', props.data.data.DC_ID],
+    queryFn: async () => {
+      const response = await axiosInstance.get(`/order/positions/${props.data.data.DC_ID}/1/1000000`)
+      return response.data.data
     }
-  }
+  })
 
   return (
     <>
       <DataGrid
-        dataSource={positionsDataGridData}
+        dataSource={queryPosition}
         showBorders={true}
-        columnAutoWidth={true}
+        showColumnLines={true}
         onRowPrepared={(e) => {
           if (e.rowType === 'data') {
             switch (e.data.TP_STATE) {
@@ -72,6 +64,7 @@ const DataGridDetail = (props) => {
         <Column
           dataField="TP_ID"
           caption="Numer"
+          dataType="number"
         />
         <Column
           dataField="TP_SYMBOL"

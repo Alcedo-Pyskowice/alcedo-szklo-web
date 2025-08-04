@@ -10,6 +10,7 @@ import DataGridDetail from "./dataGridDetail";
 import OrderPopup from "./orderPopup";
 import "./orders.css"
 import "./orders.scss"
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const deliveryValues = [
   {
@@ -46,6 +47,24 @@ export const dc_typeValues = [
 ]
 
 export default function Orders() {
+  const queryClient = useQueryClient()
+
+  const [stateButtonSelected, setStateButtonSelected] = useState([])
+  const [typeButtonSelected, setTypeButtonSelected] = useState([])
+
+  const { data: queryOrdersData } = useQuery({
+    queryKey: ['orders',stateButtonSelected, typeButtonSelected],
+    queryFn: async () => {
+      let params = { page: 1, limit: 100 }
+      params["DC_STATE"] = stateButtonSelected.join(',')
+      params["DC_TYPE"] = typeButtonSelected.join(',')
+      const response = await axiosInstance.get("/orders/1/15", {
+        params: params
+      })
+      console.log(params)
+      return response.data.data
+    }
+  })
 
   //ozapgwdx
   const stateValues = [
@@ -82,7 +101,7 @@ export default function Orders() {
   const stateButtonGroupRef = useRef(null)
   const typeButtonGroupRef = useRef(null)
 
-  const [ordersDataGridData, setOrdersDataGridData] = useState([])
+  //const [ordersDataGridData, setOrdersDataGridData] = useState([])
 
   const handleFieldDataChanged = useCallback((e) => {
     setPopupFormData((prevData) => ({
@@ -96,28 +115,23 @@ export default function Orders() {
   const [editingData, setEditingData] = useState(null)
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const [isAddingRow, setIsAddingRow] = useState(false)
-  const [stateButtonSelected, setStateButtonSelected] = useState()
-  const [typeButtonSelected, setTypeButtonSelected] = useState()
 
   const updateDataGrid = async () => {
+
     let params = { page: 1, limit: 100 }
     // checking whether all state or type buttons are selected or deselected. if either is false, the remaining selection of the group is added as a parameter with corresponding name.
     // if either are true, the group isnt added to the parameters
-    if (stateButtonGroupRef != null && typeButtonGroupRef != null) {
-      const stateButtonGroupSelected = stateButtonGroupRef.current.instance().option('selectedItemKeys')
-      const typeButtonGroupSelected = typeButtonGroupRef.current.instance().option('selectedItemKeys')
-      if (stateButtonGroupSelected.length != stateValues.length || stateButtonGroupSelected.length === 0) {
-        params["DC_STATE"] = stateButtonGroupSelected.join(",")
+      if (stateButtonSelected.length != stateValues.length || stateButtonSelected.length === 0) {
+        params["DC_STATE"] = stateButtonSelected.join(",")
       }
-      if (typeButtonGroupSelected.length != typeValues.length || typeButtonGroupRef.length === 0) {
-        params["DC_TYPE"] = typeButtonGroupSelected.join(",")
+      if (typeButtonSelected.length != typeValues.length || typeButtonSelected.length === 0) {
+        params["DC_TYPE"] = typeButtonSelected.join(",")
       }
-    }
     try {
       const response = await axiosInstance.get("/orders/1/15", {
         params: params
       })
-      setOrdersDataGridData(response.data.data)
+      //setOrdersDataGridData(response.data.data)
     } catch (error) {
       console.log(error)
       setToastConfig({
@@ -129,7 +143,7 @@ export default function Orders() {
   }
 
   useEffect(() => {
-    updateDataGrid()
+    //updateDataGrid()
   }, [])
 
   const makeDTIME = (dateString) => {
@@ -192,12 +206,6 @@ export default function Orders() {
     setIsPopupVisible(false)
   };
 
-  const handleApprove = () => {
-    // Custom approve logic
-    console.log('Approved!');
-    // You might close the popup after this action
-  };
-
   return (
     <div className="dx-card ordersContainer" style={{ padding: "15px" }}>
       <div className="buttonGroupContainer">
@@ -206,19 +214,23 @@ export default function Orders() {
           items={stateValues}
           keyExpr="state"
           selectionMode="multiple"
-          onSelectionChanged={updateDataGrid}
+          onSelectionChanged={(e) => {
+            setStateButtonSelected(e.component.option("selectedItemKeys"))
+          }}
         />
         <ButtonGroup
           ref={typeButtonGroupRef}
           items={typeValues}
           keyExpr="type"
           selectionMode="multiple"
-          onSelectionChanged={updateDataGrid}
+          onSelectionChanged={(e) => {
+            setTypeButtonSelected(e.component.option("selectedItemKeys"))
+          }}
         />
       </div>
 
       <DataGrid
-        dataSource={ordersDataGridData}
+        dataSource={queryOrdersData}
         showBorders={true}
         allowColumnResizing={true}
         columnResizingMode="widget"
