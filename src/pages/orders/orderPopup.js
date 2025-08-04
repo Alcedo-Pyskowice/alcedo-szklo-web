@@ -1,5 +1,6 @@
 import DataGrid from "devextreme-react/data-grid";
 import Form from "devextreme-react/form";
+import 'devextreme-react/text-area';
 import TabPanel from "devextreme-react/tab-panel";
 import { Column, Editing, Popup, Form as DGForm } from "devextreme-react/data-grid";
 import validationEngine from 'devextreme/ui/validation_engine';

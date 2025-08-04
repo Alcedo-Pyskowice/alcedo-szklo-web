@@ -1,4 +1,5 @@
 import Form from "devextreme-react/form";
+import 'devextreme-react/tag-box';
 import TabPanel from "devextreme-react/tab-panel";
 import { GroupItem, Item } from "devextreme-react/form";
 import { Item as TabPanelItem } from "devextreme-react/tab-panel";
