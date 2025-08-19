@@ -4,7 +4,6 @@ import defaultUser from '../utils/default-user';
 export async function signIn(email, password) {
   try {
     // Send request
-    console.log(email, password);
     const response = await axiosInstance.post("/auth/login", { "user_name": email, "password": password })
     localStorage.setItem('token', JSON.stringify(response.data.data.token));
     localStorage.setItem('user_id', JSON.stringify(response.data.data.user_id));
@@ -14,10 +13,10 @@ export async function signIn(email, password) {
       data: { user_id: response.data.data.user_id, token: response.data.data.token, name: response.data.data.user_symbol }
     };
   }
-  catch {
+  catch (err) {
     return {
       isOk: false,
-      message: "Authentication failed"
+      message: err.data.Message
     };
   }
 }
@@ -52,8 +51,6 @@ export function getUserLocal() {
 
 export async function createAccount(email, password) {
   try {
-    // Send request
-    console.log(email, password);
 
     return {
       isOk: true

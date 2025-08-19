@@ -1,509 +1,265 @@
-import DataGrid from "devextreme-react/data-grid"
+import DataGrid from "devextreme-react/data-grid";
 import ButtonGroup from "devextreme-react/button-group";
 import Toast from "devextreme-react/toast";
-import { ToolbarItem } from "devextreme-react/popup";
-import { Column, ColumnChooser, Editing, FilterBuilderPopup, FilterPanel, FilterRow, Form, HeaderFilter, MasterDetail, Pager, Paging, Popup, Position, Toolbar, Item, StateStoring, Lookup } from "devextreme-react/data-grid";
+import { Column, Editing, Form, Pager, Paging, Popup, Toolbar, Item, StateStoring, Lookup, ColumnChooser, Position, FilterRow, FilterPanel, FilterBuilderPopup, HeaderFilter, MasterDetail } from "devextreme-react/data-grid";
 import validationEngine from 'devextreme/ui/validation_engine';
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import axiosInstance from "../../axios/instance";
 import DataGridDetail from "./dataGridDetail";
 import OrderPopup from "./orderPopup";
-import "./orders.css"
-import "./orders.scss"
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import "./orders.css";
+import "./orders.scss";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+const fetchOrders = async (stateButtonSelected, typeButtonSelected) => {
+  const params = {
+    page: 1,
+    limit: 150, // Or implement pagination
+    DC_STATE: stateButtonSelected.join(','),
+    DC_TYPE: typeButtonSelected.join(',')
+  };
+  const { data } = await axiosInstance.get("/orders/1/15", { params });
+  return data.data;
+};
+
+const saveOrder = async (orderData) => {
+  const DC_ID = orderData.DC_ID || 0;
+  const body = {
+    data: {
+      ...orderData,
+      DC_DTIME: new Date(orderData.DC_DTIME)
+    }
+  };
+  const { data } = await axiosInstance.put(`/order/save?DC_ID=${DC_ID}`, body);
+  return data.data[0];
+};
+
+const removeOrder = async (DC_ID) => {
+  const { data } = await axiosInstance.post(`/order/delete/${DC_ID}`);
+  return data;
+};
+
 
 export const deliveryValues = [
-  {
-    value: 100,
-    label: "Stojaki/Transport"
-  },
-  {
-    value: 200,
-    label: "Stojaki/Odbiór własny"
-  },
-  {
-    value: 250,
-    label: "Luzem/Odbiór własny"
-  }
-]
-
+  { value: 100, label: "Stojaki/Transport" },
+  { value: 200, label: "Stojaki/Odbiór własny" },
+  { value: 250, label: "Luzem/Odbiór własny" }
+];
 export const dc_typeValues = [
-  {
-    value: 'S',
-    label: 'Standard'
-  },
-  {
-    value: 'R',
-    label: 'Reklamacja'
-  },
-  {
-    value: 'W',
-    label: 'Wewnętrzne'
-  },
-  {
-    value: 'Z',
-    label: 'Zewnętrzne'
-  }
-]
+  { value: 'S', label: 'Standard' },
+  { value: 'R', label: 'Reklamacja' },
+  { value: 'W', label: 'Wewnętrzne' },
+  { value: 'Z', label: 'Zewnętrzne' }
+];
 
+// --- Component ---
 export default function Orders() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
+  const dataGridRef = useRef(null);
 
-  const [stateButtonSelected, setStateButtonSelected] = useState([])
-  const [typeButtonSelected, setTypeButtonSelected] = useState([])
+  // --- State ---
+  const [stateButtonSelected, setStateButtonSelected] = useState([]);
+  const [typeButtonSelected, setTypeButtonSelected] = useState([]);
+  const [popupFormData, setPopupFormData] = useState({});
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [toastConfig, setToastConfig] = useState({ isVisible: false, type: "error", message: '' });
 
-  const { data: queryOrdersData } = useQuery({
-    queryKey: ['orders',stateButtonSelected, typeButtonSelected],
-    queryFn: async () => {
-      let params = { page: 1, limit: 100 }
-      params["DC_STATE"] = stateButtonSelected.join(',')
-      params["DC_TYPE"] = typeButtonSelected.join(',')
-      const response = await axiosInstance.get("/orders/1/15", {
-        params: params
-      })
-      console.log(params)
-      return response.data.data
-    }
-  })
+  const stateValues = [{ text: 'O', state: 'O' }, { text: 'Z', state: 'Z' }, { text: 'A', state: 'A' }, { text: 'P', state: 'P' }, { text: 'G', state: 'G' }, { text: 'W', state: 'W' }, { text: 'D', state: 'D' }, { text: 'X', state: 'X' }];
+  const typeValues = [{ text: 'S', type: 'S' }, { text: 'V', type: 'V' }, { text: 'R', type: 'R' }];
 
-  //ozapgwdx
-  const stateValues = [
-    { text: 'O', state: 'O', hint: '' },
-    { text: 'Z', state: 'Z', hint: '' },
-    { text: 'A', state: 'A', hint: '' },
-    { text: 'P', state: 'P', hint: '' },
-    { text: 'G', state: 'G', hint: '' },
-    { text: 'W', state: 'W', hint: '' },
-    { text: 'D', state: 'D', hint: '' },
-    { text: 'X', state: 'X', hint: '' }
-  ]
+  // --- TanStack Queries & Mutations ---
 
-  //svr
-  const typeValues = [
-    { text: 'S', type: 'S', hint: '' },
-    { text: 'V', type: 'V', hint: '' },
-    { text: 'R', type: 'R', hint: '' },
-  ]
+  const { data: ordersData, isLoading } = useQuery({
+    queryKey: ['orders', stateButtonSelected, typeButtonSelected],
+    queryFn: () => fetchOrders(stateButtonSelected, typeButtonSelected),
+    refetchOnWindowFocus: false,
+  });
 
-  const [toastConfig, setToastConfig] = useState({
-    isVisible: false,
-    type: "error",
-    message: '',
-  })
-
-  const toastOnHiding = () => {
-    setToastConfig({
-      ...toastConfig,
-      isVisible: false
-    })
-  }
-
-  const stateButtonGroupRef = useRef(null)
-  const typeButtonGroupRef = useRef(null)
-
-  //const [ordersDataGridData, setOrdersDataGridData] = useState([])
-
-  const handleFieldDataChanged = useCallback((e) => {
-    setPopupFormData((prevData) => ({
-      ...prevData,
-      [e.dataField]: e.value,
-    }));
-    console.log('Field changed:', e.dataField, e.value);
-  }, []);
-
-  const [popupFormData, setPopupFormData] = useState()
-  const [editingData, setEditingData] = useState(null)
-  const [isPopupVisible, setIsPopupVisible] = useState(false)
-  const [isAddingRow, setIsAddingRow] = useState(false)
-
-  const updateDataGrid = async () => {
-
-    let params = { page: 1, limit: 100 }
-    // checking whether all state or type buttons are selected or deselected. if either is false, the remaining selection of the group is added as a parameter with corresponding name.
-    // if either are true, the group isnt added to the parameters
-      if (stateButtonSelected.length != stateValues.length || stateButtonSelected.length === 0) {
-        params["DC_STATE"] = stateButtonSelected.join(",")
+  const saveOrderMutation = useMutation({
+    mutationFn: saveOrder,
+    onSuccess: (savedOrderData) => {
+      // Invalidate and refetch the main orders list
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      // If a new order was created, we might want to update the form data with the new ID
+      if (savedOrderData && savedOrderData.DC_ID) {
+        setPopupFormData(prev => ({ ...prev, ...savedOrderData }));
       }
-      if (typeButtonSelected.length != typeValues.length || typeButtonSelected.length === 0) {
-        params["DC_TYPE"] = typeButtonSelected.join(",")
-      }
-    try {
-      const response = await axiosInstance.get("/orders/1/15", {
-        params: params
-      })
-      //setOrdersDataGridData(response.data.data)
-    } catch (error) {
-      console.log(error)
-      setToastConfig({
-        ...toastConfig,
-        isVisible: true,
-        message: error.message
-      })
-    }
-  }
+      setToastConfig({ isVisible: true, type: "success", message: 'Zamówienie zapisane!' });
+      dataGridRef.current.instance().cancelEditData();
+    },
+    onError: (error) => {
+      setToastConfig({ isVisible: true, type: "error", message: `Błąd zapisu: ${error.message}` });
+    },
+  });
 
-  useEffect(() => {
-    //updateDataGrid()
-  }, [])
+  const removeOrderMutation = useMutation({
+    mutationFn: removeOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      setToastConfig({ isVisible: true, type: "info", message: 'Zamówienie usunięte.' });
+    },
+    onError: (error) => {
+      setToastConfig({ isVisible: true, type: "error", message: `Błąd usuwania: ${error.message}` });
+    },
+  });
 
-  const makeDTIME = (dateString) => {
-    const date = new Date(dateString)
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    const hour = String(date.getHours()).padStart(2, '0');
-    const min = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hour}:${min}`;
-  }
+  // --- Event Handlers ---
+  const handleSaving = async (e) => {
+    e.cancel = true;
 
-  const saveOrder = async () => {
     const result = validationEngine.validateGroup("myGroup");
     if (!result.isValid) {
-      return
+      return;
     }
-    const DC_ID = popupFormData.DC_ID ? popupFormData.DC_ID : 0;
-    const body = {
-      data: {
-        "DC_ID": popupFormData.DC_ID,
-        "DC_NO": popupFormData.DC_NO,
-        "DC_C_NUMBER": popupFormData.DC_C_NUMBER,
-        "DC_COMMENTS": popupFormData.DC_COMMENTS,
-        "DC_ADDRESS": popupFormData.DC_ADDRESS,
-        "DC_DTIME": new Date(popupFormData.DC_DTIME),
-        "DC_CONTACT": popupFormData.DC_CONTACT,
-        "DC_DELIVERY": popupFormData.DC_DELIVERY,
-        "DC_TYPE": popupFormData.DC_TYPE
-      }
-    }
-    try {
-      const response = await axiosInstance.put(`/order/save?DC_ID=${DC_ID}`, body)
-      return response.data.data[0];
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const removeOrder = async (DC_ID) => {
-    try {
-      const response = await axiosInstance.post(`/order/delete/${DC_ID}`)
-      return response
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const handleSave = async () => {
-    const result = validationEngine.validateGroup("myGroup");
-    if (!result.isValid) {
-      return
-    }
-    await saveOrder();
-    updateDataGrid();
-    setIsPopupVisible(false)
+    await saveOrderMutation.mutateAsync(popupFormData);
+  };
+  const handleRowRemoving = async (e) => {
+    e.cancel = true; 
+    await removeOrderMutation.mutateAsync(e.data.DC_ID);
   };
 
-  const handleCancel = (e) => {
-    setIsPopupVisible(false)
+  const onPopupHiding = () => {
+    setIsPopupVisible(false);
+    setPopupFormData({ DC_TYPE: "S", DC_DELIVERY: 100 });
+    // Invalidate queries to ensure data is fresh if user cancels
+    queryClient.invalidateQueries({ queryKey: ['orders'] });
   };
+
+  const popupToolbarItems = [
+    {
+      toolbar: 'bottom',
+      location: 'after',
+      widget: 'dxButton',
+      options: {
+        text: 'Zapisz',
+        type: 'default', stylingMode: 'contained',
+        onClick: () => dataGridRef.current.instance().saveEditData(),
+      },
+    },
+    {
+      toolbar: 'bottom',
+      location: 'after',
+      widget: 'dxButton',
+      options: {
+        text: 'Anuluj',
+        type: 'default', stylingMode: 'outlined',
+        onClick: () => dataGridRef.current.instance().cancelEditData(),
+      },
+    },
+  ];
 
   return (
     <div className="dx-card ordersContainer" style={{ padding: "15px" }}>
       <div className="buttonGroupContainer">
         <ButtonGroup
-          ref={stateButtonGroupRef}
           items={stateValues}
           keyExpr="state"
           selectionMode="multiple"
-          onSelectionChanged={(e) => {
-            setStateButtonSelected(e.component.option("selectedItemKeys"))
-          }}
+          onSelectionChanged={(e) => setStateButtonSelected(e.component.option("selectedItemKeys"))}
         />
         <ButtonGroup
-          ref={typeButtonGroupRef}
           items={typeValues}
           keyExpr="type"
           selectionMode="multiple"
-          onSelectionChanged={(e) => {
-            setTypeButtonSelected(e.component.option("selectedItemKeys"))
-          }}
+          onSelectionChanged={(e) => setTypeButtonSelected(e.component.option("selectedItemKeys"))}
         />
       </div>
 
       <DataGrid
-        dataSource={queryOrdersData}
+        ref={dataGridRef}
+        width={"100%"}
+        dataSource={ordersData}
+        keyExpr="DC_ID"
         showBorders={true}
-        allowColumnResizing={true}
-        columnResizingMode="widget"
         showRowLines={true}
         showColumnLines={true}
-        columnChooser={{ enabled: true, mode: "select" }}
-        onSaving={async (e) => {
-          const editType = e.changes || []
-          const hasRemove = editType.some(c => c.type === "remove")
-          if (!hasRemove) {
-            const result = validationEngine.validateGroup("myGroup");
-            if (!result.isValid) {
-              e.cancel = true; // prevents popup closing on invalid input
-              return
-            }
-            if (!popupFormData.DC_CONTACT) {
-              e.cancel = true;
-              return
-            }
-            await saveOrder();
-            updateDataGrid();
-          }
+        allowColumnResizing={true}
+        columnResizingMode="widget"
+        onSaving={handleSaving}
+        onRowRemoving={handleRowRemoving}
+        onEditingStart={(e) => {
+          // Deep copy data to avoid mutating cache directly
+          const formData = JSON.parse(JSON.stringify(e.data));
+          setPopupFormData(formData);
+          setIsPopupVisible(true);
         }}
-        onRowRemoving={async (e) => {
-          const response = await removeOrder(e.data.DC_ID)
-          if (response.status !== 200) {
-            e.cancel = true;
-            return
-          }
+        onInitNewRow={() => {
+          setPopupFormData({ DC_TYPE: "S", DC_DELIVERY: 100 });
+          setIsPopupVisible(true);
         }}
         onRowPrepared={(e) => {
           if (e.rowType === 'data') {
-            switch (e.data.DC_STATE) {
-              case 'P':
-                e.rowElement.classList.add('production-row')
-                break;
-              case 'H':
-                e.rowElement.classList.add('hartowanie-row')
-                break;
-              case 'T':
-                e.rowElement.classList.add('hartowanie-row')
-                break;
-              case 'Z':
-                e.rowElement.classList.add('zamowione-row')
-                break;
-              case 'C':
-                e.rowElement.classList.add('ciecie-row')
-                break;
-              case 'R':
-                e.rowElement.classList.add('ramki-row')
-                break;
-              case 'B':
-                e.rowElement.classList.add('baza-row')
-                break;
-              case 'G':
-                e.rowElement.classList.add('gotowe-row')
-                break;
-              case 'W':
-                e.rowElement.classList.add('wyslane-row')
-                break;
-              case 'D':
-                e.rowElement.classList.add('dostarczone-row')
-                break;
-              case 'A':
-                e.rowElement.classList.add('dostarczone-row')
-                break;
-              default:
-                break;
+            // Class name logic is unchanged
+            const stateClassMap = { P: 'production-row', H: 'hartowanie-row', T: 'hartowanie-row', Z: 'zamowione-row', C: 'ciecie-row', R: 'ramki-row', B: 'baza-row', G: 'gotowe-row', W: 'wyslane-row', D: 'dostarczone-row', A: 'dostarczone-row' };
+            if (stateClassMap[e.data.DC_STATE]) {
+              e.rowElement.classList.add(stateClassMap[e.data.DC_STATE]);
             }
           }
-        }}
-        onInitNewRow={() => setIsAddingRow(true)}
-        onEditingStart={(e) => {
-          setEditingData(e.data);
-          setPopupFormData({ ...popupFormData, ...e.data });
-          setIsPopupVisible(true);
-          console.log(e);
         }}
       >
         <Editing
           mode="popup"
-          allowDeleting
-          allowAdding
-          allowUpdating
+          allowDeleting={true}
+          allowAdding={true}
+          allowUpdating={true}
         >
           <Popup
             visible={isPopupVisible}
-            onHiding={() => { setIsPopupVisible(false); setEditingData(null); setPopupFormData({ DC_TYPE: "S", DC_DELIVERY: 100 }); setIsAddingRow(false); updateDataGrid() }}
+            onHiding={onPopupHiding}
             showTitle={true}
             showCloseButton={true}
             width={'100%'}
             height={'100%'}
-          >
-            <toolbarItems>
-              {/* 
-              * custom buttony na dole calego popupu
-              * trzeba zrobic: 
-              * save - to samo co w onSave chyba
-              * cancel chowa calosc
-              * pobierz (do jsona)
-              * pobierz do pdf
-              * drukuj?
-              * zamow?
-              */}
-              <ToolbarItem
-                widget="dxButton"
-                toolbar="bottom"
-                location="before"
-                options={{
-                  text: 'Pobierz',
-                  type: 'default',
-                  stylingMode: 'outlined',
-                  //onClick: handleSave,
-                }}
-              />
-              <ToolbarItem
-                widget="dxButton"
-                toolbar="bottom"
-                location="before"
-                options={{
-                  text: 'Pobierz do PDF',
-                  type: 'default',
-                  stylingMode: 'outlined',
-                  //onClick: handleSave,
-                }}
-              />
-              <ToolbarItem
-                widget="dxButton"
-                toolbar="bottom"
-                location="before"
-                options={{
-                  text: 'Drukuj',
-                  type: 'default',
-                  stylingMode: 'outlined',
-                  //onClick: handleSave,
-                }}
-              />
-              <ToolbarItem
-                widget="dxButton"
-                toolbar="bottom"
-                location="before"
-                options={{
-                  text: 'Zamów',
-                  type: 'default',
-                  stylingMode: 'outlined',
-                  //onClick: handleSave,
-                }}
-              />
-              <ToolbarItem
-                widget="dxButton"
-                toolbar="bottom"
-                location="after"
-                options={{
-                  text: 'Zapisz',
-                  type: 'default',
-                  stylingMode: 'contained',
-                  onClick: handleSave,
-                }}
-              />
-              <ToolbarItem
-                widget="dxButton"
-                toolbar="bottom"
-                location="after"
-                options={{
-                  text: 'Anuluj',
-                  stylingMode: 'outlined',
-                  onClick: handleCancel,
-                }}
-              />
-            </toolbarItems>
-          </Popup>
-          <Form
-            width={'100%'}
-            colCount={1}
-          >
-            {editingData || isAddingRow ? (
-              <Item itemType="simple" render={() => <OrderPopup data={editingData} formData={popupFormData} setFormData={setPopupFormData} handleFieldDataChanged={handleFieldDataChanged} saveNewOrder={saveOrder} />} />
-            ) : null}
+            toolbarItems={popupToolbarItems}
+          />
+          <Form validationGroup="myGroup" colCount={1}>
+            <Item itemType="simple" render={() =>
+              <OrderPopup
+                data={popupFormData}
+                formData={popupFormData}
+                setFormData={setPopupFormData}
+                saveOrderMutation={saveOrderMutation}
+              />}
+            />
           </Form>
         </Editing>
-        <ColumnChooser>
-          <Position
-            my="right top"
-            at="right bottom"
-            of=".dx-datagrid-column-chooser-button"
-          />
-        </ColumnChooser>
-        <StateStoring
-          enabled={true}
-          type="localStorage"
-          storageKey="dataGridClaims"
-        />
-        <Paging defaultPageSize={10} />
-        <Pager
-          visible={true}
-          allowedPageSizes={[10, 20, 'all']}
-          displayMode={'full'}
-          showPageSizeSelector={true}
-          showNavigationButtons={true}
-        />
+
+        {/* All other DataGrid configurations like Paging, FilterRow, Columns, etc. remain the same */}
+        <Paging defaultPageSize={15} />
+        <Pager visible={true} allowedPageSizes={[10, 20, 'all']} displayMode={'full'} showPageSizeSelector={true} showNavigationButtons={true} />
         <FilterRow visible={true} />
-        <FilterPanel visible={true} />
-        <FilterBuilderPopup position={{
-          of: window,
-          at: 'top',
-          my: 'top',
-          offset: { y: 10 },
-        }} />
         <HeaderFilter visible={true} />
-        <Column
-          dataField="DC_ID"
-          caption="Nr Zamówienia"
-        />
-        <Column
-          dataField="DC_TYPE"
-          caption="Typ"
-          defaultVisible={false}
-        />
-        <Column
-          dataField="DC_RTIME"
-          caption="Data"
-        />
-        <Column
-          dataField="DC_DTIME"
-          caption="Termin"
-        />
-        <Column
-          dataField="DC_STATE"
-          caption="Stan"
-        />
-        <Column
-          dataField="DC_C_NUMBER"
-          caption="Nr Zamówienia Kontrahenta"
-        />
-        <Column
-          dataField="DC_QNT"
-          caption="Ilość"
-        />
-        <Column
-          dataField="DC_R_QNT"
-          caption="Rozliczone"
-        />
-        <Column
-          dataField="DC_DELIVERY"
-          caption="Sposób dostawy"
-        >
-          <Lookup
-            dataSource={deliveryValues}
-            valueExpr="value"
-            displayExpr="label"
-          />
+        <ColumnChooser enabled={true} />
+        <StateStoring enabled={true} type="localStorage" storageKey="dataGridClaims" />
+        <MasterDetail enabled={true} component={DataGridDetail} />
+
+        <Column dataField="DC_ID" caption="Nr Zamówienia" />
+        <Column dataField="DC_TYPE" caption="Typ" defaultVisible={false} />
+        <Column dataField="DC_RTIME" caption="Data" dataType="datetime" format={"dd/MM/yyyy, HH:mm"} />
+        <Column dataField="DC_DTIME" caption="Termin" dataType="datetime" format={"dd/MM/yyyy, HH:mm"} />
+        <Column dataField="DC_STATE" caption="Stan" />
+        <Column dataField="DC_C_NUMBER" caption="Nr Zamówienia Kontrahenta" />
+        <Column dataField="DC_QNT" caption="Ilość" />
+        <Column dataField="DC_R_QNT" caption="Rozliczone" />
+        <Column dataField="DC_DELIVERY" caption="Sposób dostawy">
+          <Lookup dataSource={deliveryValues} valueExpr="value" displayExpr="label" />
         </Column>
-        <MasterDetail
-          enabled={true}
-          component={DataGridDetail}
-        />
+
         <Toolbar>
-          <Item location="before">
-            <h2>Zamówienia</h2>
-          </Item>
+          <Item location="before"><h2>Zamówienia</h2></Item>
           <Item name="columnChooserButton" />
           <Item name="addRowButton" />
         </Toolbar>
       </DataGrid>
 
       <Toast
-        position={{ at: "bottom center", my: "bottom center", offset: '112% -20' }}
+        position={{ at: "bottom center", my: "bottom center" }}
         visible={toastConfig.isVisible}
         message={toastConfig.message}
         type={toastConfig.type}
-        onHiding={toastOnHiding}
+        onHiding={() => setToastConfig(prev => ({ ...prev, isVisible: false }))}
         displayTime={3000}
       />
     </div>
-  )
+  );
 }

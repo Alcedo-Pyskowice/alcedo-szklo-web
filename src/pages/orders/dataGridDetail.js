@@ -5,12 +5,15 @@ import axiosInstance from "../../axios/instance";
 import "./orders.css"
 const DataGridDetail = (props) => {
 
+  const dcId = props.data.data.DC_ID;
   const { data: queryPosition } = useQuery({
-    queryKey: ['orderPosition', props.data.data.DC_ID],
+    queryKey: ['orderPosition', dcId],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/order/positions/${props.data.data.DC_ID}/1/1000000`)
+      const response = await axiosInstance.get(`/order/positions/${dcId}/1/1000000`)
       return response.data.data
-    }
+    },
+    refetchOnWindowFocus: false,
+    refetchOnMount: false
   })
 
   return (

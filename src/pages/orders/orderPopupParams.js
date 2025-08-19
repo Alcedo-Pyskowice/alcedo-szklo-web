@@ -1,127 +1,100 @@
-import Form from "devextreme-react/form";
-import { GroupItem, Item } from "devextreme-react/form";
-import { useEffect, useMemo, useState } from "react";
+import Form, { GroupItem, Item } from "devextreme-react/form";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../axios/instance";
+import { useMemo } from "react";
 
+// --- API Functions ---
+const fetchParams = async (DC_ID) => {
+  const { data } = await axiosInstance.get(`/order/parameters/${DC_ID}`);
+  return data.data;
+};
+
+const updateParam = async ({ DCP_ID, DCP_VALUE }) => {
+  const { data } = await axiosInstance.put(`/order/parameter/update`, { data: { DCP_ID, DCP_VALUE } });
+  return data;
+};
+
+// --- Component ---
 export default function OrderPopupParams({ DC_ID }) {
-  const [paramFormData, setParamFormData] = useState([])
-  const [formValues, setFormValues] = useState({})
-  useEffect(() => {
-    fetchParams()
-  }, [])
+  const queryClient = useQueryClient();
 
-  const fetchParams = async () => {
-    try {
-      const response = await axiosInstance.get(`/order/parameters/${DC_ID}`)
-      setParamFormData(response.data.data)
-      setFormValues(makeValues(response.data.data))
-    } catch (error) {
+  // --- TanStack Query & Mutation ---
+  const { data: paramData, isLoading } = useQuery({
+    queryKey: ['orderParams', DC_ID],
+    queryFn: () => fetchParams(DC_ID),
+    enabled: !!DC_ID,
+    refetchOnWindowFocus: false
+  });
 
-    }
-  }
+  const updateParamMutation = useMutation({
+    mutationFn: updateParam,
+    onSuccess: () => {
+      // Invalidate to refetch and ensure data consistency
+      queryClient.invalidateQueries({ queryKey: ['orderParams', DC_ID] });
+    },
+    onError: (error) => console.error("Error updating parameter:", error),
+  });
 
-  const updateParam = async (DCP_ID, DCP_VALUE) => {
-    try {
-      const response = await axiosInstance.put(`/order/parameter/update`, { data: { DCP_ID: DCP_ID, DCP_VALUE: DCP_VALUE } });
-      return response;
-    } catch (error) {
+  // --- Data Transformation for Form ---
+  const { formValues, groupedData } = useMemo(() => {
+    if (!paramData) return { formValues: {}, groupedData: [] };
 
-    }
-  }
+    const values = paramData.reduce((acc, item) => {
+      acc[item.PA_SYMBOL] = item.DCP_VALUE;
+      return acc;
+    }, {});
 
-  const makeValues = (data) => {
-    const a = data.reduce((acc, item) => {
-      acc[item.PA_SYMBOL] = item.DCP_VALUE
-      return acc
-    }, {})
-    console.log(a)
-    return a;
-  }
-
-  // This groups items under the most recent group caption encountered.
-  const groupedData = useMemo(() => {
-    if (!paramFormData || paramFormData.length === 0) {
-      return [];
-    }
-
-    return paramFormData.reduce((acc, item) => {
-      // If the item type is '.', it's a group header. Start a new group.
+    const groups = paramData.reduce((acc, item) => {
       if (item.PA_TYPE === '.') {
-        acc.push({
-          id: item.PA_ID, // Use the ID for the key
-          caption: item.PA_VALUE,
-          items: []
-        });
+        acc.push({ id: item.PA_ID, caption: item.PA_VALUE, items: [] });
       } else {
-        // If there are no groups yet, create a default one to hold items.
         if (acc.length === 0) {
           acc.push({ id: 'default-group-0', caption: undefined, items: [] });
         }
-        // Add the current item to the last created group.
         acc[acc.length - 1].items.push(item);
       }
       return acc;
     }, []);
-  }, [paramFormData]);
 
+    return { formValues: values, groupedData: groups };
+  }, [paramData]);
+
+  if (isLoading) return <div>Ładowanie parametrów...</div>;
+
+  // --- Render ---
   return (
-    <Form
-      formData={formValues}
-      colCount={4}
-    >
-      {console.log(groupedData)}
-      {/* 2. Render the new grouped structure with nested loops */}
-      {
-        groupedData.map((group) => (
-          <GroupItem
-            key={group.id}
-            caption={group.caption}
-            colSpan={4} // Make the group span the full width of the form
-          >
-            {/* Loop over the items *within* this specific group */}
-            {group.items.map((item) => {
-              let eType = "";
-              let eOptions = {};
+    <Form formData={formValues} colCount={4}>
+      {groupedData.map((group) => (
+        <GroupItem key={group.id} caption={group.caption} colSpan={4}>
+          {group.items.map((item) => {
+            let editorType = "";
+            let editorOptions = {};
+            switch (item.PA_TYPE) {
+              case "S": editorType = "dxTextBox"; break;
+              case "I": editorType = "dxNumberBox"; break;
+              case "P": editorType = "dxNumberBox"; editorOptions.format = item.PA_FORMAT; break;
+              case "B": editorType = "dxCheckBox"; break;
+              default: return null;
+            }
 
-              // This switch logic now runs for each item inside its group
-              switch (item.PA_TYPE) {
-                case "S":
-                  eType = "dxTextBox";
-                  break;
-                case "I":
-                  eType = "dxNumberBox";
-                  break;
-                case "P":
-                  eType = "dxNumberBox";
-                  eOptions.format = item.PA_FORMAT;
-                  break;
-                case "B":
-                  eType = "dxCheckBox";
-                  break;
-                default:
-                  // Return null or an empty fragment for unhandled types
-                  return null;
-              }
-
-              return (
-                <Item
-                  dataField={item.PA_SYMBOL}
-                  key={item.PA_ID}
-                  editorType={eType}
-                  label={{ text: item.PA_NAME }}
-                  editorOptions={{
-                    onValueChanged: async (e) => {
-                      await updateParam(item.DCP_ID, e.value)
-                    },
-                    ...eOptions
-                  }}
-                  // Each item can still span the full width if desired
-                  colSpan={4}
-                />
-              );
-            })}
-          </GroupItem>
-        ))}
+            return (
+              <Item
+                dataField={item.PA_SYMBOL}
+                key={item.PA_ID}
+                editorType={editorType}
+                label={{ text: item.PA_NAME }}
+                editorOptions={{
+                  ...editorOptions,
+                  onValueChanged: (e) => {
+                    updateParamMutation.mutate({ DCP_ID: item.DCP_ID, DCP_VALUE: e.value });
+                  },
+                }}
+                colSpan={4}
+              />
+            );
+          })}
+        </GroupItem>
+      ))}
     </Form>
   );
 }

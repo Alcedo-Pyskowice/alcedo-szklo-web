@@ -43,7 +43,7 @@ export default function OrderPopupPopup({ formData, handleFieldDataChanged }) {
   }
 
   return (
-    <div>
+    <div style={{width: "100%"}}>
       <TabPanel>
         <TabPanelItem title="Pozycja">
           <Form
