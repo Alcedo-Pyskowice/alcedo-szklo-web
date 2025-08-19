@@ -1,71 +1,123 @@
 import Form from "devextreme-react/form";
 import { GroupItem, Item } from "devextreme-react/form";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../axios/instance";
+import { LoadPanel } from "devextreme-react/load-panel";
+import  notify from "devextreme/ui/notify";
+
+// API functions
+const fetchProfileParameters = async () => {
+  const response = await axiosInstance.get(`/profile/parameters?group=10,14,17,99&columns=2`);
+  return response.data.data;
+};
+
+const updateProfileParameter = async ({ id, value }) => {
+  const response = await axiosInstance.put(`/profile/parameter/update`, { 
+    data: { USP_ID: id, USP_VALUE: value } 
+  });
+  return response;
+};
 
 export default function Profile() {
+  const queryClient = useQueryClient();
 
-  const [paramFormData, setParamFormData] = useState([])
-  const [formValues, setFormValues] = useState({})
-  useEffect(() => {
-    fetchParams()
-  }, [])
+  // Fetch profile parameters
+  const { 
+    data: paramFormData = [], 
+    isLoading, 
+    isError, 
+    error,
+    refetch 
+  } = useQuery({
+    queryKey: ['profileParameters'],
+    queryFn: fetchProfileParameters,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
 
-  const fetchParams = async () => {
-    try {
-      const response = await axiosInstance.get(`/profile/parameters?group=10,14,17,99&columns=2`)
-      setParamFormData(response.data.data)
-      setFormValues(makeValues(response.data.data))
-    } catch (error) {
+  // Update parameter mutation
+  const updateParamMutation = useMutation({
+    mutationFn: updateProfileParameter,
+    onMutate: async ({ id, value, symbol }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['profileParameters'] });
 
+      // Snapshot the previous value
+      const previousData = queryClient.getQueryData(['profileParameters']);
+
+      // Optimistically update the cache
+      queryClient.setQueryData(['profileParameters'], (old) => {
+        if (!old) return old;
+        return old.map(item => 
+          item.USP_ID === id 
+            ? { ...item, USP_VALUE: value }
+            : item
+        );
+      });
+
+      // Return a context object with the snapshotted value
+      return { previousData, symbol, value };
+    },
+    onError: (err, variables, context) => {
+      // If the mutation fails, use the context to roll back
+      if (context?.previousData) {
+        queryClient.setQueryData(['profileParameters'], context.previousData);
+      }
+      
+      // Show error notification
+      notify({
+        message: 'Failed to update parameter. Please try again.',
+        type: 'error',
+        displayTime: 3000,
+      });
+    },
+    onSuccess: (response, variables, context) => {
+      // Update localStorage if ANAM field was updated successfully
+      if (context?.symbol === "ANAM" && response?.status === 200) {
+        localStorage.setItem('name', context.value);
+      }
+
+      // Show success notification (optional)
+      notify({
+        message: 'Parameter updated successfully',
+        type: 'success',
+        displayTime: 2000,
+      });
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure sync with server
+      queryClient.invalidateQueries({ queryKey: ['profileParameters'] });
+    },
+  });
+
+  // Transform data into form values
+  const formValues = useMemo(() => {
+    if (!paramFormData || paramFormData.length === 0) {
+      return {};
     }
-  }
+    
+    return paramFormData.reduce((acc, item) => {
+      acc[item.PA_SYMBOL] = item.USP_VALUE;
+      return acc;
+    }, {});
+  }, [paramFormData]);
 
-  const updateParam = async (id, value) => {
-    try {
-      const response = await axiosInstance.put(`/profile/parameter/update`, { data: { USP_ID: id, USP_VALUE: value } });
-      return response;
-    } catch (error) {
-
-    }
-  }
-
-  const makeValues = (data) => {
-    const a = data.reduce((acc, item) => {
-      acc[item.PA_SYMBOL] = item.USP_VALUE
-      return acc
-    }, {})
-    console.log(a)
-    return a;
-  }
-
-  // This groups items under the most recent group caption encountered.
-
+  // Group data for display
   const groupedData = useMemo(() => {
     if (!paramFormData || paramFormData.length === 0) {
       return [];
     }
 
-    // Use a Map to hold the final column objects.
-    // The key is the column index ('1', '2', etc.).
     const columnsMap = new Map();
-
-    // Start with a default column key. This will be used for any items
-    // that appear before the first group header.
     let currentColumnKey = '1';
 
-    // Process all items in a single pass to maintain order.
     paramFormData.forEach(item => {
-      // Check if the item is a group header.
       if (item.PA_TYPE === '.') {
-        // A group header defines which column it and subsequent items belong to.
-        // If it has a 'column' property, update our current column key.
-        // Otherwise, it belongs to the column of the previous header, or '1'.
         if (item.column) {
           currentColumnKey = item.column.toString();
         }
 
-        // Ensure a container for this column exists in the map.
         if (!columnsMap.has(currentColumnKey)) {
           columnsMap.set(currentColumnKey, {
             id: `column-container-${currentColumnKey}`,
@@ -73,16 +125,13 @@ export default function Profile() {
           });
         }
 
-        // This header starts a new inner group within its column.
         columnsMap.get(currentColumnKey).innerGroups.push({
           id: item.PA_ID,
-          caption: item.PA_VALUE, // The visible caption for the group
+          caption: item.PA_VALUE,
           items: [],
         });
 
-      } else { // This is a regular form field item.
-
-        // It belongs to the current column. Ensure the column container exists.
+      } else {
         if (!columnsMap.has(currentColumnKey)) {
           columnsMap.set(currentColumnKey, {
             id: `column-container-${currentColumnKey}`,
@@ -92,58 +141,76 @@ export default function Profile() {
 
         const columnContainer = columnsMap.get(currentColumnKey);
 
-        // Ensure there's at least one inner group to add items to.
-        // This handles items that appear before the first group header.
         if (columnContainer.innerGroups.length === 0) {
           columnContainer.innerGroups.push({
             id: `default-group-for-col-${currentColumnKey}`,
-            caption: undefined, // This default group is captionless
+            caption: undefined,
             items: [],
           });
         }
 
-        // Add the regular item to the last inner group of the current column.
         const lastGroup = columnContainer.innerGroups[columnContainer.innerGroups.length - 1];
         lastGroup.items.push(item);
       }
     });
 
-    // Convert the map to a sorted array for stable rendering order.
-    // This sorts by column key ('1', '2', etc.).
     const finalColumns = Array.from(columnsMap.entries())
       .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }))
       .map(entry => entry[1]);
 
     return finalColumns;
-
   }, [paramFormData]);
 
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="dx-card" style={{ padding: "15px", minHeight: "200px" }}>
+        <LoadPanel 
+          visible={true}
+          message="Loading profile parameters..."
+          position={{ of: '.dx-card' }}
+        />
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (isError) {
+    return (
+      <div className="dx-card" style={{ padding: "15px" }}>
+        <div className="error-container" style={{ textAlign: 'center', padding: '20px' }}>
+          <h3>Error loading profile</h3>
+          <p>{error?.message || 'An unexpected error occurred'}</p>
+          <button 
+            className="dx-button"
+            onClick={() => refetch()}
+            style={{ marginTop: '10px' }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="dx-card"
-      style={{ padding: "15px" }}
-    >
+    <div className="dx-card" style={{ padding: "15px" }}>
       <Form
         formData={formValues}
-        colCount={4} // Example: a 4-column grid for the whole form
+        colCount={4}
       >
-        {console.log(groupedData)}
-        {/* Loop 1: Render the top-level Column Groups */}
         {groupedData.map((columnGroup) => (
           <GroupItem
             key={columnGroup.id}
             caption={columnGroup.caption}
-            // Adjust colSpan based on your layout. For two columns, use colSpan={2}.
             colSpan={2}
           >
-            {/* Loop 2: Render the Inner Groups inside each column */}
             {columnGroup.innerGroups.map((innerGroup) => (
               <GroupItem
                 key={innerGroup.id}
                 caption={innerGroup.caption}
               >
-                {/* Loop 3: Render the Items inside each inner group */}
                 {innerGroup.items.map((item) => {
-                  // ... your existing switch logic to determine eType and eOptions ...
                   let eType = "";
                   let eOptions = {};
 
@@ -165,12 +232,14 @@ export default function Profile() {
                       editorType={eType}
                       label={{ text: item.PA_NAME }}
                       editorOptions={{
-                        onValueChanged: async (e) => {
-                          const response = await updateParam(item.USP_ID, e.value)
-                          if (item.PA_SYMBOL === "ANAM" && response.status === 200) {
-                            localStorage.setItem('name', e.value)
-                          }
+                        onValueChanged: (e) => {
+                          updateParamMutation.mutate({
+                            id: item.USP_ID,
+                            value: e.value,
+                            symbol: item.PA_SYMBOL
+                          });
                         },
+                        disabled: updateParamMutation.isLoading,
                         ...eOptions,
                       }}
                     />
@@ -184,4 +253,3 @@ export default function Profile() {
     </div>
   );
 }
-
