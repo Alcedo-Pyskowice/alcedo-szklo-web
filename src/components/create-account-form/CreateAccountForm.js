@@ -48,8 +48,8 @@ export default function CreateAccountForm() {
           editorType={'dxTextBox'}
           editorOptions={emailEditorOptions}
         >
-          <RequiredRule message="Email is required" />
-          <EmailRule message="Email is invalid" />
+          <RequiredRule message="Email jest wymagany" />
+          <EmailRule message="Email jest niepoprawny" />
           <Label visible={false} />
         </Item>
         <Item
@@ -57,7 +57,7 @@ export default function CreateAccountForm() {
           editorType={'dxTextBox'}
           editorOptions={passwordEditorOptions}
         >
-          <RequiredRule message="Password is required" />
+          <RequiredRule message="Hasło jest wymagane" />
           <Label visible={false} />
         </Item>
         <Item
@@ -65,9 +65,9 @@ export default function CreateAccountForm() {
           editorType={'dxTextBox'}
           editorOptions={confirmedPasswordEditorOptions}
         >
-          <RequiredRule message="Password is required" />
+          <RequiredRule message="Hasło jest wymagane" />
           <CustomRule
-            message={'Passwords do not match'}
+            message={'Hasła się nie zgadzają'}
             validationCallback={confirmPassword}
           />
           <Label visible={false} />
@@ -87,19 +87,19 @@ export default function CreateAccountForm() {
               {
                 loading
                   ? <LoadIndicator width={'24px'} height={'24px'} visible={true} />
-                  : 'Create a new account'
+                  : 'Utwórz nowe konto'
               }
             </span>
           </ButtonOptions>
         </ButtonItem>
       </Form>
       <div className={'login-link'}>
-        Have an account? <Link to={'/login'}>Sign In</Link>
+        Masz już konto? <Link to={'/login'}>Zaloguj się</Link>
       </div>
     </form>
   );
 }
 
 const emailEditorOptions = { stylingMode: 'filled', placeholder: 'Email', mode: 'email' };
-const passwordEditorOptions = { stylingMode: 'filled', placeholder: 'Password', mode: 'password' };
-const confirmedPasswordEditorOptions = { stylingMode: 'filled', placeholder: 'Confirm Password', mode: 'password' };
+const passwordEditorOptions = { stylingMode: 'filled', placeholder: 'Hasło', mode: 'password' };
+const confirmedPasswordEditorOptions = { stylingMode: 'filled', placeholder: 'Potwierdź hasło', mode: 'password' };

@@ -103,11 +103,11 @@ export default function OrderPopup({ data, formData, setFormData, saveOrderMutat
 
   // --- Event Handlers ---
   const handleFieldDataChanged = (e) => {
-    setFormData(prev => ({ ...prev, [e.dataField]: e.value }));
+//    setFormData(prev => ({ ...prev, [e.dataField]: e.value }));
   };
 
   const handlePopupFieldDataChanged = (e) => {
-    setPopupPositionFormData(prev => ({ ...prev, [e.dataField]: e.value }));
+ //   setPopupPositionFormData(prev => ({ ...prev, [e.dataField]: e.value }));
   };
 
   const handlePositionSaving = async (e) => {
@@ -144,7 +144,7 @@ export default function OrderPopup({ data, formData, setFormData, saveOrderMutat
         DC_ID: currentDcId,
         positionData: popupPositionFormData
       });
-      dataGridRef.current.instance().cancelEditData();
+      dataGridRef.current?.instance().cancelEditData();
     }
   };
 

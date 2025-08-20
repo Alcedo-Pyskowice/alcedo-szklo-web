@@ -8,17 +8,12 @@ import { useScreenSize } from '../../utils/media-query';
 import { Template } from 'devextreme-react/core/template';
 import { useMenuPatch } from '../../utils/patches';
 
-
-
-
 export default function SideNavOuterToolbar({ title, children }) {
   const scrollViewRef = useRef(null);
   const navigate = useNavigate();
   const { isXSmall, isLarge } = useScreenSize();
   const [patchCssClass, onMenuReady] = useMenuPatch();
   const [menuStatus, setMenuStatus] = useState(
-    //zmienione zeby przy otwarciu aplikacji menu bylo zamkniete
-    //patrz: side-nav-inner-toolbar.js dla default wartosci
     MenuStatus.Closed
   );
 
@@ -31,33 +26,33 @@ export default function SideNavOuterToolbar({ title, children }) {
     event.stopPropagation();
   }, []);
 
-  const temporaryOpenMenu = useCallback(() => {
-    setMenuStatus(
-      prevMenuStatus => prevMenuStatus === MenuStatus.Closed
-        ? MenuStatus.TemporaryOpened
-        : prevMenuStatus
-    );
-  }, []);
-
   const onOutsideClick = useCallback(() => {
     setMenuStatus(
-      prevMenuStatus => prevMenuStatus !== MenuStatus.Closed 
+      prevMenuStatus => prevMenuStatus !== MenuStatus.Closed
         ? MenuStatus.Closed
         : prevMenuStatus
     );
     return menuStatus === MenuStatus.Closed ? true : false;
-  }, [isLarge, menuStatus]);
+  }, [menuStatus]);
+
+  // No-op function to prevent menu from opening on click
+  const openMenu = useCallback(() => {
+    // Intentionally empty - menu should only open via toggle button
+  }, []);
 
   const onNavigationChanged = useCallback(({ itemData, event, node }) => {
-    if (menuStatus === MenuStatus.Closed || !itemData.path || node.selected) {
+    // Don't navigate if no path or already selected
+    if (!itemData.path || node.selected) {
       event.preventDefault();
       return;
     }
 
+    // Always navigate regardless of menu status
     navigate(itemData.path);
     scrollViewRef.current.instance().scrollTo(0);
 
-    if (!isLarge || menuStatus === MenuStatus.TemporaryOpened) {
+    // Only close menu if it was temporarily opened or on small screens
+    if (!isLarge && menuStatus === MenuStatus.Opened) {
       setMenuStatus(MenuStatus.Closed);
       event.stopPropagation();
     }
@@ -79,7 +74,7 @@ export default function SideNavOuterToolbar({ title, children }) {
         minSize={isXSmall ? 0 : 60}
         maxSize={250}
         shading={isLarge ? false : true}
-        opened={menuStatus === MenuStatus.Closed ? false : true}
+        opened={menuStatus === MenuStatus.Opened}
         template={'menu'}
       >
         <div className={'container'}>
@@ -100,7 +95,7 @@ export default function SideNavOuterToolbar({ title, children }) {
           <SideNavigationMenu
             compactMode={menuStatus === MenuStatus.Closed}
             selectedItemChanged={onNavigationChanged}
-            openMenu={temporaryOpenMenu}
+            openMenu={openMenu}
             onMenuReady={onMenuReady}
           >
           </SideNavigationMenu>
@@ -112,6 +107,6 @@ export default function SideNavOuterToolbar({ title, children }) {
 
 const MenuStatus = {
   Closed: 1,
-  Opened: 2,
-  TemporaryOpened: 3
+  Opened: 2
 };
+

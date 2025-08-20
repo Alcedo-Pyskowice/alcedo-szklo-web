@@ -17,12 +17,12 @@ export default function UserPanel({ menuMode }) {
 
   const menuItems = useMemo(() => ([
     {
-      text: 'Profile',
+      text: 'Profil',
       icon: 'user',
       onClick: navigateToProfile
     },
     {
-      text: 'Logout',
+      text: 'Wyloguj',
       icon: 'runner',
       onClick: signOut
     }

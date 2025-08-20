@@ -7,12 +7,12 @@ import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 // --- IGU Dimensions (Constants) ---
 //const glassWidth = 1; // meters
 //const glassHeight = 1; // meters
-const glassPaneThickness = 0.004; // 4mm glass
-const spacerAirGap = 0.016; // 16mm air gap
-const spacerBarCrossSectionWidth = 0.008;
-const spacerBarCrossSectionHeight = 0.008;
-const sealantOverlapOnGlassFace = 0.012;
-const sealantBeadThickness = 0.006;
+let glassPaneThickness = 0.004; // 4mm glass
+let spacerAirGap = 0.016; // 16mm air gap
+let spacerBarCrossSectionWidth = 0.008;
+let spacerBarCrossSectionHeight = 0.008;
+let sealantOverlapOnGlassFace = 0.012;
+let sealantBeadThickness = 0.006;
 const epsilon = 0.0001;
 
 const GlassRender = ({ scale, symbol }) => {
@@ -133,8 +133,6 @@ const GlassRender = ({ scale, symbol }) => {
     });
 
     // --- Geometries and Meshes ---
-    const iguGroup = new THREE.Group();
-    iguGroupRef.current = iguGroup;
 
     /*  @TODO
      * +1h 06.07
@@ -153,59 +151,16 @@ const GlassRender = ({ scale, symbol }) => {
 
 
     const glassGeometry = new THREE.BoxGeometry(glassWidth, glassHeight, glassPaneThickness);
+
+    const iguGroup = new THREE.Group();
+    iguGroupRef.current = iguGroup;
+
     const glassPane1 = new THREE.Mesh(glassGeometry, glassMaterial);
     glassPane1.position.z = (spacerAirGap / 2) + (glassPaneThickness / 2);
-    iguGroup.add(glassPane1);
 
     const glassPane2 = new THREE.Mesh(glassGeometry, glassMaterial);
     glassPane2.position.z = -(spacerAirGap / 2) - (glassPaneThickness / 2);
-    iguGroup.add(glassPane2);
 
-    const spacerDepth = spacerAirGap - 2 * epsilon;
-    const spacerFrameLength = glassWidth - (2 * sealantOverlapOnGlassFace) - (2 * epsilon);
-    const spacerFrameHeight = glassHeight - (2 * sealantOverlapOnGlassFace) - (2 * epsilon);
-
-    const spacerHorizGeometry = new THREE.BoxGeometry(spacerFrameLength, spacerBarCrossSectionHeight, spacerDepth);
-    const topSpacer = new THREE.Mesh(spacerHorizGeometry, spacerMaterial);
-    topSpacer.position.y = (glassHeight / 2) - sealantOverlapOnGlassFace - (spacerBarCrossSectionHeight / 2);
-    iguGroup.add(topSpacer);
-
-    const bottomSpacer = new THREE.Mesh(spacerHorizGeometry, spacerMaterial);
-    bottomSpacer.position.y = -(glassHeight / 2) + sealantOverlapOnGlassFace + (spacerBarCrossSectionHeight / 2);
-    iguGroup.add(bottomSpacer);
-
-    const spacerVertBarActualHeight = spacerFrameHeight - (2 * spacerBarCrossSectionHeight);
-    const spacerVertGeometry = new THREE.BoxGeometry(spacerBarCrossSectionWidth, spacerVertBarActualHeight, spacerDepth);
-
-    const leftSpacer = new THREE.Mesh(spacerVertGeometry, spacerMaterial);
-    leftSpacer.position.x = -(glassWidth / 2) + sealantOverlapOnGlassFace + (spacerBarCrossSectionWidth / 2);
-    iguGroup.add(leftSpacer);
-
-    const rightSpacer = new THREE.Mesh(spacerVertGeometry, spacerMaterial);
-    rightSpacer.position.x = (glassWidth / 2) - sealantOverlapOnGlassFace - (spacerBarCrossSectionWidth / 2);
-    iguGroup.add(rightSpacer);
-
-    const sealantUnitDepth = glassPaneThickness * 2 + spacerAirGap + sealantBeadThickness + epsilon;
-    const sealantTopGeometry = new THREE.BoxGeometry(glassWidth, sealantOverlapOnGlassFace, sealantUnitDepth);
-
-    const topSealant = new THREE.Mesh(sealantTopGeometry, sealantMaterial);
-    topSealant.position.y = (glassHeight / 2) - (sealantOverlapOnGlassFace / 2) + epsilon;
-    iguGroup.add(topSealant);
-
-    const bottomSealant = new THREE.Mesh(sealantTopGeometry, sealantMaterial);
-    bottomSealant.position.y = -(glassHeight / 2) + (sealantOverlapOnGlassFace / 2) - epsilon;
-    iguGroup.add(bottomSealant);
-
-    const sealantVertBarHeight = glassHeight - (2 * sealantOverlapOnGlassFace);
-    const sealantSideGeometry = new THREE.BoxGeometry(sealantOverlapOnGlassFace, sealantVertBarHeight, sealantUnitDepth);
-
-    const leftSealant = new THREE.Mesh(sealantSideGeometry, sealantMaterial);
-    leftSealant.position.x = -(glassWidth / 2) + (sealantOverlapOnGlassFace / 2) - epsilon;
-    iguGroup.add(leftSealant);
-
-    const rightSealant = new THREE.Mesh(sealantSideGeometry, sealantMaterial);
-    rightSealant.position.x = (glassWidth / 2) - (sealantOverlapOnGlassFace / 2) + epsilon;
-    iguGroup.add(rightSealant);
 
     // The original code centers the IGU group with `iguGroup.position.y = -glassHeight / 2;`
     // This effectively makes the *bottom* of the IGU at y=0 of the group's local space.
@@ -217,16 +172,142 @@ const GlassRender = ({ scale, symbol }) => {
     const symbolSplit = symbol.split('/');
 
     if (symbolSplit.length % 2 !== 0 && symbolSplit.length > 1 && symbolSplit.length < 10) {
-      if (symbol.value.match(/^(\d{1,2})(?:\/(\d{1,2})\/\1)*(?:\/\2\/\1)?$/)) {
+      if (symbol.match(/^(\d{1,2})(?:\/(\d{1,2})\/\1)*(?:\/\2\/\1)?$/)) {
         const symbolLength = Math.round(symbolSplit.length / 2)
         if (symbolLength >= 2) {
-          // tutaj wrzucic generowanie szyb, spacerow i czarnego
-          // dodatkowo musze zapytac czy szyba moze byc nieregularna: np. 4/16/6/20/4
+          glassPaneThickness = symbolSplit[0] * 0.001
+          spacerAirGap = symbolSplit[1] * 0.001 + glassPaneThickness
+          const spacerDepth = spacerAirGap - 2 * epsilon;
+          const spacerFrameLength = glassWidth - (2 * sealantOverlapOnGlassFace) - (2 * epsilon);
+          const spacerFrameHeight = glassHeight - (2 * sealantOverlapOnGlassFace) - (2 * epsilon);
+          const sealantVertBarHeight = glassHeight - (2 * sealantOverlapOnGlassFace);
+          const sealantUnitDepth = spacerAirGap * (symbolLength - 1) + epsilon;
+          const spacerVertBarActualHeight = spacerFrameHeight - (2 * spacerBarCrossSectionHeight);
 
+          // parzysta ilosc szyb
+          if (symbolLength % 2 == 0) {
+            let firstPane = (spacerAirGap * (symbolLength - 1)) / 2
+            for (let i = 0; i < symbolSplit.length; i++) {
+              if (i % 2 == 0) {
+                const gp = new THREE.Mesh(glassGeometry, glassMaterial);
+                gp.position.z = firstPane
+                iguGroup.add(gp);
+                firstPane -= spacerAirGap
+                console.log(gp)
+              } else {
+                const spacerHorizGeometry = new THREE.BoxGeometry(spacerFrameLength, spacerBarCrossSectionHeight, spacerDepth);
+                const topSpacer = new THREE.Mesh(spacerHorizGeometry, spacerMaterial);
+                topSpacer.position.y = (glassHeight / 2) - sealantOverlapOnGlassFace - (spacerBarCrossSectionHeight / 2);
+                topSpacer.position.z = firstPane + 0.008
+                iguGroup.add(topSpacer);
+
+                const bottomSpacer = new THREE.Mesh(spacerHorizGeometry, spacerMaterial);
+                bottomSpacer.position.y = -(glassHeight / 2) + sealantOverlapOnGlassFace + (spacerBarCrossSectionHeight / 2);
+                bottomSpacer.position.z = firstPane + 0.008
+                iguGroup.add(bottomSpacer);
+
+                const spacerVertGeometry = new THREE.BoxGeometry(spacerBarCrossSectionWidth, spacerVertBarActualHeight, spacerDepth);
+
+                const leftSpacer = new THREE.Mesh(spacerVertGeometry, spacerMaterial);
+                leftSpacer.position.x = -(glassWidth / 2) + sealantOverlapOnGlassFace + (spacerBarCrossSectionWidth / 2);
+                leftSpacer.position.z = firstPane + 0.008
+                iguGroup.add(leftSpacer);
+
+                const rightSpacer = new THREE.Mesh(spacerVertGeometry, spacerMaterial);
+                rightSpacer.position.x = (glassWidth / 2) - sealantOverlapOnGlassFace - (spacerBarCrossSectionWidth / 2);
+                rightSpacer.position.z = firstPane + 0.008
+                iguGroup.add(rightSpacer);
+
+                const sealantTopGeometry = new THREE.BoxGeometry(glassWidth, sealantOverlapOnGlassFace, sealantUnitDepth);
+
+                const topSealant = new THREE.Mesh(sealantTopGeometry, sealantMaterial);
+                topSealant.position.y = (glassHeight / 2) - (sealantOverlapOnGlassFace / 2) + epsilon;
+                iguGroup.add(topSealant);
+
+                const bottomSealant = new THREE.Mesh(sealantTopGeometry, sealantMaterial);
+                bottomSealant.position.y = -(glassHeight / 2) + (sealantOverlapOnGlassFace / 2) - epsilon;
+                iguGroup.add(bottomSealant);
+
+                const sealantSideGeometry = new THREE.BoxGeometry(sealantOverlapOnGlassFace, sealantVertBarHeight, sealantUnitDepth);
+
+                const leftSealant = new THREE.Mesh(sealantSideGeometry, sealantMaterial);
+                leftSealant.position.x = -(glassWidth / 2) + (sealantOverlapOnGlassFace / 2) - epsilon;
+                iguGroup.add(leftSealant);
+
+                const rightSealant = new THREE.Mesh(sealantSideGeometry, sealantMaterial);
+                rightSealant.position.x = (glassWidth / 2) - (sealantOverlapOnGlassFace / 2) + epsilon;
+                iguGroup.add(rightSealant);
+              }
+            }
+
+//          nieparzysta ilosc szyb
+          } else {
+            let firstPane = (spacerAirGap * (symbolLength - 2))
+            for (let i = 0; i < symbolSplit.length; i++) {
+              if (i % 2 == 0) {
+                const gp = new THREE.Mesh(glassGeometry, glassMaterial);
+                gp.position.z = firstPane
+                iguGroup.add(gp);
+                firstPane -= spacerAirGap
+                console.log(gp)
+              } else {
+                const spacerHorizGeometry = new THREE.BoxGeometry(spacerFrameLength, spacerBarCrossSectionHeight, spacerDepth);
+                const topSpacer = new THREE.Mesh(spacerHorizGeometry, spacerMaterial);
+                topSpacer.position.y = (glassHeight / 2) - sealantOverlapOnGlassFace - (spacerBarCrossSectionHeight / 2);
+                topSpacer.position.z = firstPane + 0.008
+                iguGroup.add(topSpacer);
+
+                const bottomSpacer = new THREE.Mesh(spacerHorizGeometry, spacerMaterial);
+                bottomSpacer.position.y = -(glassHeight / 2) + sealantOverlapOnGlassFace + (spacerBarCrossSectionHeight / 2);
+                bottomSpacer.position.z = firstPane + 0.008
+                iguGroup.add(bottomSpacer);
+
+                const spacerVertGeometry = new THREE.BoxGeometry(spacerBarCrossSectionWidth, spacerVertBarActualHeight, spacerDepth);
+
+                const leftSpacer = new THREE.Mesh(spacerVertGeometry, spacerMaterial);
+                leftSpacer.position.x = -(glassWidth / 2) + sealantOverlapOnGlassFace + (spacerBarCrossSectionWidth / 2);
+                leftSpacer.position.z = firstPane + 0.008
+                iguGroup.add(leftSpacer);
+
+                const rightSpacer = new THREE.Mesh(spacerVertGeometry, spacerMaterial);
+                rightSpacer.position.x = (glassWidth / 2) - sealantOverlapOnGlassFace - (spacerBarCrossSectionWidth / 2);
+                rightSpacer.position.z = firstPane + 0.008
+                iguGroup.add(rightSpacer);
+
+                const sealantTopGeometry = new THREE.BoxGeometry(glassWidth, sealantOverlapOnGlassFace, sealantUnitDepth);
+
+                const topSealant = new THREE.Mesh(sealantTopGeometry, sealantMaterial);
+                topSealant.position.y = (glassHeight / 2) - (sealantOverlapOnGlassFace / 2) + epsilon;
+                iguGroup.add(topSealant);
+
+                const bottomSealant = new THREE.Mesh(sealantTopGeometry, sealantMaterial);
+                bottomSealant.position.y = -(glassHeight / 2) + (sealantOverlapOnGlassFace / 2) - epsilon;
+                iguGroup.add(bottomSealant);
+
+                const sealantSideGeometry = new THREE.BoxGeometry(sealantOverlapOnGlassFace, sealantVertBarHeight, sealantUnitDepth);
+
+                const leftSealant = new THREE.Mesh(sealantSideGeometry, sealantMaterial);
+                leftSealant.position.x = -(glassWidth / 2) + (sealantOverlapOnGlassFace / 2) - epsilon;
+                iguGroup.add(leftSealant);
+
+                const rightSealant = new THREE.Mesh(sealantSideGeometry, sealantMaterial);
+                rightSealant.position.x = (glassWidth / 2) - (sealantOverlapOnGlassFace / 2) + epsilon;
+                iguGroup.add(rightSealant);
+              }
+
+            }
+          }
+
+          // szyba moze byc nieregularna: np. 4/16/6/20/4
+          // poki co bedzie na regularne
+          scene.add(iguGroup);
         }
       }
+    } else {
+      glassPane1.position.z = 0;
+      scene.add(glassPane1)
     }
-    scene.add(iguGroup);
+
 
     // --- Handle Window Resize ---
     const handleResize = () => {
@@ -243,7 +324,9 @@ const GlassRender = ({ scale, symbol }) => {
 
     // --- Animation Loop ---
     const animate = () => {
-      animationFrameIdRef.current = requestAnimationFrame(animate);
+      setTimeout(function() {
+        animationFrameIdRef.current = requestAnimationFrame(animate);
+      }, 1000 / 30);
       if (controlsRef.current) controlsRef.current.update();
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
         rendererRef.current.render(sceneRef.current, cameraRef.current);
@@ -260,16 +343,16 @@ const GlassRender = ({ scale, symbol }) => {
       if (controlsRef.current) controlsRef.current.dispose();
 
       // Dispose materials
-      glassMaterial.dispose();
-      spacerMaterial.dispose();
-      sealantMaterial.dispose();
+      //  glassMaterial.dispose();
+      //  spacerMaterial.dispose();
+      //  sealantMaterial.dispose();
 
-      // Dispose geometries
-      glassGeometry.dispose();
-      spacerHorizGeometry.dispose();
-      spacerVertGeometry.dispose();
-      sealantTopGeometry.dispose();
-      sealantSideGeometry.dispose();
+      //  // Dispose geometries
+      //  glassGeometry.dispose();
+      //  spacerHorizGeometry.dispose();
+      //  spacerVertGeometry.dispose();
+      //  sealantTopGeometry.dispose();
+      //  sealantSideGeometry.dispose();
 
       // Dispose HDRI texture if loaded
       if (sceneRef.current && sceneRef.current.environment) {

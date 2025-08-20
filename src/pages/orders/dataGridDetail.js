@@ -2,61 +2,64 @@ import { useQuery } from "@tanstack/react-query";
 import DataGrid from "devextreme-react/data-grid";
 import { Column } from "devextreme-react/data-grid";
 import axiosInstance from "../../axios/instance";
+import { DataGridSkeleton } from "../utils/DataGridSkeleton";
 import "./orders.css"
 const DataGridDetail = (props) => {
 
   const dcId = props.data.data.DC_ID;
-  const { data: queryPosition } = useQuery({
+  const { data: queryPosition, isFetching } = useQuery({
     queryKey: ['orderPosition', dcId],
     queryFn: async () => {
       const response = await axiosInstance.get(`/order/positions/${dcId}/1/1000000`)
       return response.data.data
     },
     refetchOnWindowFocus: false,
-    refetchOnMount: false
   })
+
+  if (isFetching) {
+    return (<DataGridSkeleton isNested={true} header={false} rowCount={2} />)
+  }
 
   return (
     <>
       <DataGrid
         dataSource={queryPosition}
+        columnAutoWidth={true}
+        showRowLines={true}
+        showColumnHeaders={true}
         showBorders={true}
         showColumnLines={true}
         onRowPrepared={(e) => {
           if (e.rowType === 'data') {
             switch (e.data.TP_STATE) {
               case 'P':
-                e.rowElement.classList.add('production-row')
+                e.rowElement.classList.add('status-p')
                 break;
               case 'H':
-                e.rowElement.classList.add('hartowanie-row')
-                break;
               case 'T':
-                e.rowElement.classList.add('hartowanie-row')
+                e.rowElement.classList.add('status-h')
                 break;
               case 'Z':
-                e.rowElement.classList.add('zamowione-row')
+                e.rowElement.classList.add('status-z')
                 break;
               case 'C':
-                e.rowElement.classList.add('ciecie-row')
+                e.rowElement.classList.add('status-c')
                 break;
               case 'R':
-                e.rowElement.classList.add('ramki-row')
+                e.rowElement.classList.add('status-r')
                 break;
               case 'B':
-                e.rowElement.classList.add('baza-row')
+                e.rowElement.classList.add('status-b')
                 break;
               case 'G':
-                e.rowElement.classList.add('gotowe-row')
+                e.rowElement.classList.add('status-g')
                 break;
               case 'W':
-                e.rowElement.classList.add('wyslane-row')
+                e.rowElement.classList.add('status-w')
                 break;
               case 'D':
-                e.rowElement.classList.add('dostarczone-row')
-                break;
               case 'A':
-                e.rowElement.classList.add('dostarczone-row')
+                e.rowElement.classList.add('status-d')
                 break;
               default:
                 break;

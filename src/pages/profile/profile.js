@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../axios/instance";
 import { LoadPanel } from "devextreme-react/load-panel";
 import  notify from "devextreme/ui/notify";
+import ProfileSkeleton from "./ProfileSkeleton";
+import "./profile.scss"
 
 // API functions
 const fetchProfileParameters = async () => {
@@ -162,26 +164,18 @@ export default function Profile() {
   }, [paramFormData]);
 
   // Handle loading state
-  if (isLoading) {
-    return (
-      <div className="dx-card" style={{ padding: "15px", minHeight: "200px" }}>
-        <LoadPanel 
-          visible={true}
-          message="Loading profile parameters..."
-          position={{ of: '.dx-card' }}
-        />
-      </div>
-    );
+ if (isLoading) {
+    return <ProfileSkeleton />;
   }
 
-  // Handle error state
+  // Handle error state (remains the same)
   if (isError) {
     return (
       <div className="dx-card" style={{ padding: "15px" }}>
         <div className="error-container" style={{ textAlign: 'center', padding: '20px' }}>
           <h3>Error loading profile</h3>
           <p>{error?.message || 'An unexpected error occurred'}</p>
-          <button 
+          <button
             className="dx-button"
             onClick={() => refetch()}
             style={{ marginTop: '10px' }}
@@ -192,9 +186,8 @@ export default function Profile() {
       </div>
     );
   }
-
   return (
-    <div className="dx-card" style={{ padding: "15px" }}>
+    <div className="dx-card form-fade-in" style={{ padding: "15px" }}>
       <Form
         formData={formValues}
         colCount={4}

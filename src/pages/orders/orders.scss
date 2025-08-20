@@ -1,1 +1,380 @@
 @use "../../variables.scss" as *;
+
+// Variables for consistent timing and colors
+$skeleton-animation-duration: 1.8s;
+$skeleton-stagger-delay: 0.05s;
+$skeleton-fade-duration: 0.3s;
+
+// Light theme colors
+$skeleton-bg-light: #f0f0f0;
+$skeleton-highlight-light: #ffffff;
+$skeleton-border-light: #e0e0e0;
+
+// Dark theme colors
+$skeleton-bg-dark: #2a2a2a;
+$skeleton-highlight-dark: #3a3a3a;
+$skeleton-border-dark: #1a1a1a;
+
+// Smooth shimmer animation
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+// Fade in animation for content
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Pulse animation for skeleton rows
+@keyframes skeletonPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+// Container transitions
+.datagrid-container {
+  position: relative;
+  min-height: 600px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &.loading {
+    .datagrid-skeleton {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+  
+  &.loaded {
+    .datagrid-wrapper {
+      animation: fadeIn $skeleton-fade-duration ease-out;
+    }
+  }
+}
+
+// DataGrid wrapper with refetch overlay
+.datagrid-wrapper {
+  position: relative;
+  transition: opacity 0.2s ease;
+  
+  &.fetching {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  
+  .refetch-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
+    animation: shimmer $skeleton-animation-duration infinite linear;
+    pointer-events: none;
+    z-index: 1000;
+  }
+}
+
+// Main skeleton container
+.datagrid-skeleton {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid $skeleton-border-light;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  
+  // Shimmer effect base
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      $skeleton-bg-light 0%,
+      $skeleton-bg-light 40%,
+      $skeleton-highlight-light 50%,
+      $skeleton-bg-light 60%,
+      $skeleton-bg-light 100%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer $skeleton-animation-duration infinite linear;
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+    
+    // GPU acceleration
+    transform: translateZ(0);
+    will-change: background-position;
+  }
+  
+  // Header skeleton
+  .skeleton-header {
+    padding: 16px;
+    border-bottom: 1px solid $skeleton-border-light;
+    background: #fafafa;
+    
+    .skeleton-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      .skeleton-title {
+        width: 150px;
+        height: 28px;
+      }
+      
+      .skeleton-toolbar-buttons {
+        display: flex;
+        gap: 12px;
+        
+        .skeleton-button {
+          width: 80px;
+          height: 32px;
+        }
+      }
+    }
+  }
+  
+  // Filter row skeleton
+  .skeleton-filter-row {
+    display: flex;
+    padding: 8px 0;
+    border-bottom: 1px solid $skeleton-border-light;
+    background: #fafafa;
+    
+    .skeleton-filter-cell {
+      flex: 1;
+      padding: 0 12px;
+      
+      .skeleton-filter {
+        height: 28px;
+        width: 100%;
+      }
+    }
+  }
+  
+  // Table header skeleton
+  .skeleton-table-header {
+    display: flex;
+    padding: 12px 0;
+    background: #f5f5f5;
+    border-bottom: 2px solid $skeleton-border-light;
+    
+    .skeleton-header-cell {
+      flex: 1;
+      padding: 0 12px;
+      
+      .skeleton-header-text {
+        height: 16px;
+        width: 70%;
+      }
+    }
+  }
+  
+  // Table body skeleton
+  .skeleton-table-body {
+    .skeleton-row {
+      display: flex;
+      padding: 12px 0;
+      border-bottom: 1px solid $skeleton-border-light;
+      animation: skeletonPulse 2s ease-in-out infinite;
+      
+      &:nth-child(even) {
+        background: rgba(0, 0, 0, 0.01);
+      }
+      
+      .skeleton-cell {
+        flex: 1;
+        padding: 0 12px;
+        
+        .skeleton-cell-content {
+          height: 16px;
+          width: 85%;
+          
+          // Vary widths for more realistic look
+          &:nth-child(odd) {
+            width: 75%;
+          }
+          
+          &:nth-child(3n) {
+            width: 60%;
+          }
+        }
+      }
+    }
+  }
+  
+  // Pager skeleton
+  .skeleton-pager {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #fafafa;
+    border-top: 1px solid $skeleton-border-light;
+    
+    .skeleton-pager-info {
+      width: 200px;
+      height: 20px;
+    }
+    
+    .skeleton-pager-buttons {
+      display: flex;
+      gap: 8px;
+      
+      .skeleton-pager-button {
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+      }
+    }
+  }
+}
+
+// Dark theme support
+.dx-swatch-dark {
+  .datagrid-skeleton {
+    background: #1e1e1e;
+    border-color: $skeleton-border-dark;
+    
+    .skeleton-shimmer {
+      background: linear-gradient(
+        90deg,
+        $skeleton-bg-dark 0%,
+        $skeleton-bg-dark 40%,
+        $skeleton-highlight-dark 50%,
+        $skeleton-bg-dark 60%,
+        $skeleton-bg-dark 100%
+      );
+      background-size: 1000px 100%;
+    }
+    
+    .skeleton-header,
+    .skeleton-filter-row {
+      background: #252525;
+      border-bottom-color: $skeleton-border-dark;
+    }
+    
+    .skeleton-table-header {
+      background: #2a2a2a;
+      border-bottom-color: $skeleton-border-dark;
+    }
+    
+    .skeleton-table-body {
+      .skeleton-row {
+        border-bottom-color: $skeleton-border-dark;
+        
+        &:nth-child(even) {
+          background: rgba(255, 255, 255, 0.02);
+        }
+      }
+    }
+    
+    .skeleton-pager {
+      background: #252525;
+      border-top-color: $skeleton-border-dark;
+    }
+  }
+  
+  .datagrid-wrapper {
+    .refetch-overlay {
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        transparent 100%
+      );
+    }
+  }
+}
+
+// Performance optimizations
+.datagrid-skeleton * {
+  // Reduce paint areas
+  contain: layout style paint;
+}
+
+// Smooth transitions between states
+.datagrid-container {
+  .datagrid-skeleton,
+  .datagrid-wrapper {
+    transition: opacity $skeleton-fade-duration cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .datagrid-skeleton {
+    .skeleton-filter-row,
+    .skeleton-table-header,
+    .skeleton-table-body .skeleton-row {
+      .skeleton-cell,
+      .skeleton-filter-cell,
+      .skeleton-header-cell {
+        &:nth-child(n+5) {
+          display: none; // Hide extra columns on mobile
+        }
+      }
+    }
+    
+    .skeleton-pager {
+      flex-direction: column;
+      gap: 12px;
+      
+      .skeleton-pager-info {
+        width: 100%;
+      }
+    }
+  }
+}
+
+// Prevent layout shift
+.ordersContainer {
+  .buttonGroupContainer {
+    margin-bottom: 16px;
+    min-height: 40px;
+  }
+}
+
+// Additional row state colors (from original)
+.production-row { background-color: rgba(255, 235, 59, 0.2); }
+.hartowanie-row { background-color: rgba(255, 152, 0, 0.2); }
+.zamowione-row { background-color: rgba(33, 150, 243, 0.2); }
+.ciecie-row { background-color: rgba(156, 39, 176, 0.2); }
+.ramki-row { background-color: rgba(233, 30, 99, 0.2); }
+.baza-row { background-color: rgba(158, 158, 158, 0.2); }
+.gotowe-row { background-color: rgba(76, 175, 80, 0.2); }
+.wyslane-row { background-color: rgba(0, 188, 212, 0.2); }
+.dostarczone-row { background-color: rgba(139, 195, 74, 0.2); }
+
+// Dark theme row colors
+.dx-swatch-dark {
+  .production-row { background-color: rgba(255, 235, 59, 0.1); }
+  .hartowanie-row { background-color: rgba(255, 152, 0, 0.1); }
+  .zamowione-row { background-color: rgba(33, 150, 243, 0.1); }
+  .ciecie-row { background-color: rgba(156, 39, 176, 0.1); }
+  .ramki-row { background-color: rgba(233, 30, 99, 0.1); }
+  .baza-row { background-color: rgba(158, 158, 158, 0.1); }
+  .gotowe-row { background-color: rgba(76, 175, 80, 0.1); }
+  .wyslane-row { background-color: rgba(0, 188, 212, 0.1); }
+  .dostarczone-row { background-color: rgba(139, 195, 74, 0.1); }
+}

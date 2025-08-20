@@ -45,8 +45,8 @@ export default function LoginForm() {
           editorType={'dxTextBox'}
           editorOptions={emailEditorOptions}
         >
-          <RequiredRule message="Email is required" />
-          <EmailRule message="Email is invalid" />
+          <RequiredRule message="Email jest wymagany" />
+          <EmailRule message="Email jest niepoprawny" />
           <Label visible={false} />
         </Item>
         <Item
@@ -54,7 +54,7 @@ export default function LoginForm() {
           editorType={'dxTextBox'}
           editorOptions={passwordEditorOptions}
         >
-          <RequiredRule message="Password is required" />
+          <RequiredRule message="Hasło jest wymagane" />
           <Label visible={false} />
         </Item>
 {/*    
@@ -77,17 +77,17 @@ export default function LoginForm() {
               {
                 loading
                   ? <LoadIndicator width={'24px'} height={'24px'} visible={true} />
-                  : 'Sign In'
+                  : 'Zaloguj'
               }
             </span>
           </ButtonOptions>
         </ButtonItem>
       </Form>
       <div className={'link'}>
-        <Link to={'/reset-password'}>Forgot password?</Link>
+        <Link to={'/reset-password'}>Zapomniałeś hasła?</Link>
       </div>
       <Button
-        text={'Create an account'}
+        text={'Utwórz konto'}
         stylingMode={'outlined'}
         width={'100%'}
         onClick={onCreateAccountClick}
@@ -97,5 +97,5 @@ export default function LoginForm() {
 }
 
 const emailEditorOptions = { stylingMode: 'filled', placeholder: 'Email', mode: 'email' };
-const passwordEditorOptions = { stylingMode: 'filled', placeholder: 'Password', mode: 'password' };
-const rememberMeEditorOptions = { text: 'Remember me', elementAttr: { class: 'form-text' } };
+const passwordEditorOptions = { stylingMode: 'filled', placeholder: 'Hasło', mode: 'password' };
+const rememberMeEditorOptions = { text: 'Zapamiętaj mnie', elementAttr: { class: 'form-text' } };

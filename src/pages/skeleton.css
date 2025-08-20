@@ -1,0 +1,465 @@
+/* ========================================
+   Light Theme (Default) Styles
+   ======================================== */
+
+/* Base Skeleton Container */
+.skeleton-container {
+  padding: 20px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Main Grid Specific */
+.skeleton-main-grid {
+  min-height: 600px;
+}
+
+/* Detail Grid Specific */
+.skeleton-detail-grid {
+  padding: 15px;
+  margin: 10px;
+}
+
+/* Header Styles */
+.skeleton-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.skeleton-header-small {
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+}
+
+.skeleton-title {
+  width: 150px;
+  height: 32px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-title-large {
+  width: 200px;
+  height: 36px;
+}
+
+.skeleton-spacer {
+  flex: 1;
+}
+
+.skeleton-button {
+  width: 100px;
+  height: 36px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+/* Filter Row Skeleton */
+.skeleton-filter-row {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+}
+
+.skeleton-filter-cell {
+  flex: 1;
+  height: 32px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 3px;
+}
+
+/* Table Styles */
+.skeleton-table {
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.skeleton-filter-row + .skeleton-table {
+  border-radius: 0 0 4px 4px;
+}
+
+.skeleton-table-header {
+  display: flex;
+  background: #f5f5f5;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.skeleton-header-cell {
+  flex: 1;
+  height: 40px;
+  margin: 8px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #d8d8d8 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 3px;
+}
+
+.skeleton-table-body {
+  background: #fff;
+}
+
+.skeleton-row {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.skeleton-row:last-child {
+  border-bottom: none;
+}
+
+.skeleton-cell {
+  flex: 1;
+  height: 20px;
+  margin: 10px 8px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 3px;
+}
+
+/* Pager Skeleton */
+.skeleton-pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-top: 1px solid #e0e0e0;
+  margin-top: -1px;
+}
+
+.skeleton-pager-info {
+  width: 150px;
+  height: 24px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 3px;
+}
+
+.skeleton-pager-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.skeleton-pager-button {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 3px;
+}
+
+/* Loading More Indicator */
+.loading-more-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  gap: 10px;
+  color: #666;
+  font-size: 14px;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #337ab7;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Error State */
+.error-container {
+  padding: 40px;
+  text-align: center;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.error-container-small {
+  padding: 20px;
+  margin: 10px;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.retry-button {
+  padding: 10px 20px;
+  background: #337ab7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.retry-button:hover {
+  background: #286090;
+}
+
+.retry-button:active {
+  transform: translateY(1px);
+}
+
+/* ========================================
+   Dark Theme Styles
+   ======================================== */
+
+/* Base Dark Theme */
+.dx-swatch-dark .skeleton-container {
+  background: #1e1e1e;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.dx-swatch-dark .skeleton-header {
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.dx-swatch-dark .skeleton-title,
+.dx-swatch-dark .skeleton-button,
+.dx-swatch-dark .skeleton-pager-info,
+.dx-swatch-dark .skeleton-pager-button {
+  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: shimmer-dark 1.5s infinite;
+}
+
+/* Dark Filter Row */
+.dx-swatch-dark .skeleton-filter-row {
+  background: #252525;
+  border-color: #3a3a3a;
+}
+
+.dx-swatch-dark .skeleton-filter-cell {
+  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: shimmer-dark 1.5s infinite;
+}
+
+/* Dark Table */
+.dx-swatch-dark .skeleton-table {
+  border: 1px solid #3a3a3a;
+}
+
+.dx-swatch-dark .skeleton-table-header {
+  background: #252525;
+  border-bottom: 2px solid #3a3a3a;
+}
+
+.dx-swatch-dark .skeleton-header-cell {
+  background: linear-gradient(90deg, #303030 25%, #404040 50%, #303030 75%);
+  background-size: 200% 100%;
+  animation: shimmer-dark 1.5s infinite;
+}
+
+.dx-swatch-dark .skeleton-table-body {
+  background: #1e1e1e;
+}
+
+.dx-swatch-dark .skeleton-row {
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.dx-swatch-dark .skeleton-cell {
+  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: shimmer-dark 1.5s infinite;
+}
+
+/* Dark Pager */
+.dx-swatch-dark .skeleton-pager {
+  border-top: 1px solid #3a3a3a;
+}
+
+/* Dark Loading Indicator */
+.dx-swatch-dark .loading-more-indicator {
+  color: #aaa;
+}
+
+.dx-swatch-dark .loading-spinner {
+  border-color: #3a3a3a;
+  border-top-color: #4a90d9;
+}
+
+/* Dark Error State */
+.dx-swatch-dark .error-container {
+  background: #1e1e1e;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.dx-swatch-dark .error-message {
+  color: #ff5252;
+}
+
+.dx-swatch-dark .retry-button {
+  background: #337ab7;
+}
+
+.dx-swatch-dark .retry-button:hover {
+  background: #4a90d9;
+}
+
+/* ========================================
+   Common Animations & Effects
+   ======================================== */
+
+/* Vary cell widths for realistic appearance */
+.skeleton-cell:nth-child(1) { flex: 0.5; }
+.skeleton-cell:nth-child(2) { flex: 0.8; }
+.skeleton-cell:nth-child(3) { flex: 1; }
+.skeleton-cell:nth-child(4) { flex: 1.5; }
+.skeleton-cell:nth-child(5) { flex: 0.6; }
+.skeleton-cell:nth-child(6) { flex: 0.6; }
+.skeleton-cell:nth-child(7) { flex: 1; }
+.skeleton-cell:nth-child(8) { flex: 1.2; }
+.skeleton-cell:nth-child(9) { flex: 0.7; }
+.skeleton-cell:nth-child(10) { flex: 0.3; }
+.skeleton-cell:nth-child(11) { flex: 1; }
+.skeleton-cell:nth-child(12) { flex: 0.8; }
+.skeleton-cell:nth-child(13) { flex: 0.8; }
+
+/* Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes shimmer-dark {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Staggered animations for wave effect */
+.skeleton-row:nth-child(1) .skeleton-cell { animation-delay: 0.1s; }
+.skeleton-row:nth-child(2) .skeleton-cell { animation-delay: 0.2s; }
+.skeleton-row:nth-child(3) .skeleton-cell { animation-delay: 0.3s; }
+.skeleton-row:nth-child(4) .skeleton-cell { animation-delay: 0.4s; }
+.skeleton-row:nth-child(5) .skeleton-cell { animation-delay: 0.5s; }
+.skeleton-row:nth-child(6) .skeleton-cell { animation-delay: 0.6s; }
+.skeleton-row:nth-child(7) .skeleton-cell { animation-delay: 0.7s; }
+.skeleton-row:nth-child(8) .skeleton-cell { animation-delay: 0.8s; }
+.skeleton-row:nth-child(9) .skeleton-cell { animation-delay: 0.9s; }
+.skeleton-row:nth-child(10) .skeleton-cell { animation-delay: 1s; }
+
+/* ========================================
+   DataGrid Animations with Icon Fixes
+   ======================================== */
+
+/* Fade in animation for DataGrid */
+.dx-datagrid {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Prevent animation ONLY on filter row icons - don't break positioning */
+.dx-datagrid-filter-row .dx-icon,
+.dx-datagrid-filter-row .dx-icon-search,
+.dx-datagrid-filter-row .dx-icon-filter-operation-default,
+.dx-datagrid-filter-row .dx-editor-cell .dx-icon {
+  animation: none !important;
+}
+
+/* Prevent the fadeIn animation from being inherited by overlays */
+.dx-overlay-wrapper,
+.dx-dropdown-editor-overlay,
+.dx-popup-wrapper,
+.dx-overlay-content,
+.dx-dropdowneditor-overlay {
+  animation: none !important;
+  /* DO NOT use transform: none - it breaks positioning! */
+}
+
+/* Ensure filter row elements don't inherit the parent animation */
+.dx-datagrid-filter-row * {
+  animation: none !important;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media (max-width: 768px) {
+  .skeleton-container {
+    padding: 10px;
+  }
+  
+  .skeleton-header {
+    margin-bottom: 15px;
+  }
+  
+  .skeleton-cell {
+    height: 18px;
+    margin: 8px 4px;
+  }
+  
+  .skeleton-header-cell {
+    height: 35px;
+    margin: 6px 4px;
+  }
+  
+  .skeleton-filter-row {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  
+  .skeleton-filter-cell {
+    min-width: 100px;
+  }
+  
+  .skeleton-pager {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .error-container {
+    padding: 20px;
+  }
+}

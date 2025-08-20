@@ -29,105 +29,149 @@
 }
 
 /* Light Theme */
-.success-row {
-  background-color: #d4edda; /* Light green */
-  color: #155724; /* Dark green text */
+.status-o {
+  background-color: #F0F0F0; /* clWindow equivalent */
+  color: #000000;
 }
 
-.production-row {
-  background-color: #e0f7fa; /* Pale cyan */
-  color: #004d4d; /* Dark cyan text */
+/* 'P' - Produkcja (Production) */
+.status-p {
+  background-color: #FFFF00; /* clYellow */
+  color: #000000;
 }
 
-.hartowanie-row {
-  background-color: #fff9c4; /* Light yellow */
-  color: #666600; /* Olive text */
+/* 'H', 'T' - Hartowanie (Hardening) */
+.status-h,
+.status-t {
+  background-color: #00FFFF; /* clAqua */
+  color: #000000; /* Font color changed to black for better readability on Aqua */
 }
 
-.zamowione-row {
-  background-color: #f5f5f5; /* Light gray */
-  color: #333333; /* Dark gray text */
+/* 'Z' - Zamówione (Ordered) */
+.status-z {
+  background-color: #000000; /* clBlack */
+  color: #FFFFFF;
 }
 
-.ciecie-row {
-  background-color: #d0eafc; /* Soft blue */
-  color: #003366; /* Navy text */
+/* 'C' - Cięcie (Cutting) */
+.status-c {
+  background-color: #98D1F8; /* Delphi $98D1F8 -> BGR -> #F8D198 */
+  color: #000000;
 }
 
-.ramki-row {
-  background-color: #f3e5f5; /* Lavender */
-  color: #4a148c; /* Purple text */
+/* 'R' - Ramki (Frames) */
+.status-r {
+  background-color: rgb(202, 154, 227); /* #CA9AE3 */
+  color: #000000;
 }
 
-.baza-row {
-  background-color: #e8f5e9; /* Mint green */
-  color: #1b5e20; /* Forest green text */
+/* 'B' - Baza/Załadowane (Base/Loaded) */
+.status-b {
+  background-color: #C0DCC0; /* clMoneyGreen */
+  color: #000000;
 }
 
-.gotowe-row {
-  background-color: #fff3e0; /* Light orange */
-  color: #e65100; /* Burnt orange text */
+/* 'G' - Gotowe (Ready) */
+.status-g {
+  background-color: #87CEEB; /* clSkyBlue */
+  color: #000000;
 }
 
-.wyslane-row {
-  background-color: #e8f5e9; /* Mint green */
-  color: #1b5e20; /* Forest green text */
+/* 'W' - Wysyłane (Shipped) */
+.status-w {
+  background-color: #00FF00; /* clLime */
+  color: #000000;
 }
 
-.dostarczone-row {
-  background-color: #f0f0f0; /* Light gray */
-  color: #424242; /* Dark gray text */
+/* 'D', 'A' - Dostarczone (Delivered) */
+.status-d,
+.status-a {
+  background-color: #B0B0B0; /* clActiveBorder equivalent (neutral gray) */
+  color: #FFFFFF;
 }
 
-/* Dark Theme */
-.dx-swatch-dark .success-row {
-  background-color: #2e5931; /* Dark green */
-  color: #c3e6cb; /* Light green text */
+/* Default/Else case */
+.status-unknown {
+  background-color: #000000;
+  color: #FFFFFF;
 }
 
-.dx-swatch-dark .production-row {
-  background-color: #2a4d4d; /* Dark cyan */
-  color: #b2ebf2; /* Pale cyan text */
+
+/* ==============================================================
+  Dark Theme Overrides
+  Activated when a parent has the .dx-swatch-dark class
+  ==============================================================
+*/
+
+/* 'O' - Oczekiwanie */
+.dx-swatch-dark .status-o {
+  background-color: #424242;
+  color: #F5F5F5;
+  border-color: rgba(255,255,255,0.1);
 }
 
-.dx-swatch-dark .hartowanie-row {
-  background-color: #666600; /* Olive */
-  color: #fff9c4; /* Light yellow text */
+/* 'P' - Produkcja */
+.dx-swatch-dark .status-p {
+  background-color: #C7A400; /* Darker yellow */
+  color: #121212;
 }
 
-.dx-swatch-dark .zamowione-row {
-  background-color: #2e2e2e; /* Dark gray */
-  color: #f5f5f5; /* Light gray text */
+/* 'H', 'T' - Hartowanie */
+.dx-swatch-dark .status-h,
+.dx-swatch-dark .status-t {
+  background-color: #009797; /* Darker aqua/teal */
+  color: #F5F5F5;
 }
 
-.dx-swatch-dark .ciecie-row {
-  background-color: #2c3e50; /* Navy */
-  color: #d0eafc; /* Soft blue text */
+/* 'Z' - Zamówione (Already dark-mode friendly) */
+.dx-swatch-dark .status-z {
+  background-color: #1c1c1c;
+  color: #FFFFFF;
+  border-color: rgba(255,255,255,0.2);
 }
 
-.dx-swatch-dark .ramki-row {
-  background-color: #4a148c; /* Purple */
-  color: #f3e5f5; /* Lavender text */
+/* 'C' - Cięcie */
+.dx-swatch-dark .status-c {
+  background-color: #2c3e50; /* Darker orange/brown */
+  color: #d0eafc;
 }
 
-.dx-swatch-dark .baza-row {
-  background-color: #1b5e20; /* Forest green */
-  color: #e8f5e9; /* Mint green text */
+/* 'R' - Ramki */
+.dx-swatch-dark .status-r {
+  background-color: #63437a; /* Darker purple */
+  color: #F5F5F5;
 }
 
-.dx-swatch-dark .gotowe-row {
-  background-color: #e65100; /* Burnt orange */
-  color: #fff3e0; /* Light orange text */
+/* 'B' - Baza/Załadowane */
+.dx-swatch-dark .status-b {
+  background-color: #385a38; /* Darker green */
+  color: #F5F5F5;
 }
 
-.dx-swatch-dark .wyslane-row {
-  background-color: #1b5e20; /* Forest green */
-  color: #e8f5e9; /* Mint green text */
+/* 'G' - Gotowe */
+.dx-swatch-dark .status-g {
+  background-color: #2a5a70; /* Darker sky blue */
+  color: #F5F5F5;
 }
 
-.dx-swatch-dark .dostarczone-row {
-  background-color: #424242; /* Dark gray */
-  color: #f0f0f0; /* Light gray text */
+/* 'W' - Wysyłane */
+.dx-swatch-dark .status-w {
+  background-color: #008000; /* Darker lime (standard green) */
+  color: #F5F5F5;
+}
+
+/* 'D', 'A' - Dostarczone */
+.dx-swatch-dark .status-d,
+.dx-swatch-dark .status-a {
+  background-color: #616161;
+  color: #F5F5F5;
+}
+
+/* Default/Else case */
+.dx-swatch-dark .status-unknown {
+  background-color: #1c1c1c;
+  color: #FFFFFF;
+  border-color: rgba(255,255,255,0.2);
 }
 
 .state-span {

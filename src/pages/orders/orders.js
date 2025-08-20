@@ -10,6 +10,8 @@ import OrderPopup from "./orderPopup";
 import "./orders.css";
 import "./orders.scss";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { DataGridSkeleton } from "../utils/DataGridSkeleton"
+import "../skeleton.css"
 
 const fetchOrders = async (stateButtonSelected, typeButtonSelected) => {
   const params = {
@@ -69,7 +71,7 @@ export default function Orders() {
 
   // --- TanStack Queries & Mutations ---
 
-  const { data: ordersData, isLoading } = useQuery({
+  const { data: ordersData, isLoading, isFetching } = useQuery({
     queryKey: ['orders', stateButtonSelected, typeButtonSelected],
     queryFn: () => fetchOrders(stateButtonSelected, typeButtonSelected),
     refetchOnWindowFocus: false,
@@ -114,7 +116,7 @@ export default function Orders() {
     await saveOrderMutation.mutateAsync(popupFormData);
   };
   const handleRowRemoving = async (e) => {
-    e.cancel = true; 
+    e.cancel = true;
     await removeOrderMutation.mutateAsync(e.data.DC_ID);
   };
 
@@ -147,6 +149,10 @@ export default function Orders() {
       },
     },
   ];
+
+  if (isFetching) {
+    return (<DataGridSkeleton showFilter={true} showPager={true} />)
+  }
 
   return (
     <div className="dx-card ordersContainer" style={{ padding: "15px" }}>
@@ -190,7 +196,7 @@ export default function Orders() {
         onRowPrepared={(e) => {
           if (e.rowType === 'data') {
             // Class name logic is unchanged
-            const stateClassMap = { P: 'production-row', H: 'hartowanie-row', T: 'hartowanie-row', Z: 'zamowione-row', C: 'ciecie-row', R: 'ramki-row', B: 'baza-row', G: 'gotowe-row', W: 'wyslane-row', D: 'dostarczone-row', A: 'dostarczone-row' };
+            const stateClassMap = { P: 'status-p', H: 'status-h', T: 'status-h', Z: 'status-z', C: 'status-c', R: 'status-r', B: 'status-b', G: 'status-g', W: 'status-w', D: 'status-d', A: 'status-d' };
             if (stateClassMap[e.data.DC_STATE]) {
               e.rowElement.classList.add(stateClassMap[e.data.DC_STATE]);
             }
