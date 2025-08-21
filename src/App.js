@@ -13,11 +13,11 @@ import { useScreenSizeClass } from './utils/media-query';
 import UnauthenticatedContent from './UnauthenticatedContent';
 import { ThemeContext, useThemeContext } from "./theme";
 import config from "devextreme/core/config";
-import { licenseKey } from "./devextreme-key"
 import { loadMessages, locale } from 'devextreme/localization';
 import plMessages from "devextreme/localization/messages/pl.json"
+const key = process.env.REACT_APP_LICENSE_KEY
 config({
-  licenseKey
+  licenseKey: key
 })
 
 const Content = React.lazy(() => import("./Content"));
